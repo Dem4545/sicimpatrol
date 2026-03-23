@@ -1,597 +1,1338 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SICIM TCF Patrol Confirmation System</title>
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
-<style>
-  :root {
-    --bg:       #0b0f1a;
-    --surface:  #111827;
-    --panel:    #1a2235;
-    --border:   rgba(255,255,255,0.08);
-    --border2:  rgba(255,255,255,0.14);
-    --amber:    #f59e0b;
-    --amber-d:  #b45309;
-    --green:    #22c55e;
-    --green-d:  #15803d;
-    --red:      #ef4444;
-    --red-d:    #b91c1c;
-    --blue:     #3b82f6;
-    --muted:    #6b7280;
-    --dim:      #9ca3af;
-    --text:     #e5e7eb;
-    --text-h:   #f9fafb;
-    --mono:     'IBM Plex Mono', monospace;
-    --sans:     'IBM Plex Sans', sans-serif;
-  }
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-  html { font-size: 14px; }
-  body { font-family: var(--sans); background: var(--bg); color: var(--text); min-height: 100vh; }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SICIM TCF Patrol Confirmation System</title>
+  <link
+    href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap"
+    rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0b0f1a;
+      --surface: #111827;
+      --panel: #1a2235;
+      --border: rgba(255, 255, 255, 0.08);
+      --border2: rgba(255, 255, 255, 0.14);
+      --amber: #f59e0b;
+      --amber-d: #b45309;
+      --green: #22c55e;
+      --green-d: #15803d;
+      --red: #ef4444;
+      --red-d: #b91c1c;
+      --blue: #3b82f6;
+      --muted: #6b7280;
+      --dim: #9ca3af;
+      --text: #e5e7eb;
+      --text-h: #f9fafb;
+      --mono: 'IBM Plex Mono', monospace;
+      --sans: 'IBM Plex Sans', sans-serif;
+    }
 
-  /* ── LOGIN ── */
-  #login-screen {
-    display: flex; flex-direction: column; align-items: center; justify-content: center;
-    min-height: 100vh; padding: 2rem;
-    background: radial-gradient(ellipse 60% 50% at 50% 40%, rgba(245,158,11,.07) 0%, transparent 70%), var(--bg);
-  }
-  .login-card {
-    width: 360px; background: var(--surface); border: 1px solid var(--border2);
-    border-radius: 16px; padding: 2.5rem; box-shadow: 0 40px 80px rgba(0,0,0,.6);
-  }
-  .login-logo { font-size: 2.2rem; text-align: center; margin-bottom: .5rem; }
-  .login-title { font-size: 1.1rem; font-weight: 600; text-align: center; color: var(--text-h); margin-bottom: .25rem; }
-  .login-sub { font-size: .78rem; color: var(--muted); text-align: center; font-family: var(--mono); margin-bottom: 2rem; }
-  .login-label { font-size: .75rem; color: var(--muted); text-transform: uppercase; letter-spacing: .08em; margin-bottom: .6rem; display: block; }
-  .login-btn {
-    display: flex; align-items: center; gap: 10px; width: 100%;
-    background: var(--panel); border: 1px solid var(--border); border-radius: 8px;
-    padding: .7rem 1rem; color: var(--text); cursor: pointer; margin-bottom: .4rem;
-    font-family: var(--sans); font-size: .875rem; transition: all .15s;
-  }
-  .login-btn:hover { background: rgba(245,158,11,.12); border-color: var(--amber); color: var(--amber); }
-  .login-btn .avatar { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: .7rem; font-weight: 600; flex-shrink: 0; }
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
 
-  /* ── APP SHELL ── */
-  #app { display: none; flex-direction: column; min-height: 100vh; }
+    html {
+      font-size: 14px;
+    }
 
-  /* header */
-  .hdr {
-    background: var(--surface); border-bottom: 1px solid var(--border);
-    display: flex; align-items: center; justify-content: space-between;
-    padding: 0 1.5rem; height: 52px; position: sticky; top: 0; z-index: 100;
-  }
-  .hdr-left { display: flex; align-items: center; gap: 10px; }
-  .hdr-logo { font-size: 1.2rem; }
-  .hdr-title { font-size: .95rem; font-weight: 600; color: var(--text-h); }
-  .hdr-badge { font-family: var(--mono); font-size: .7rem; color: var(--amber); background: rgba(245,158,11,.1); border: 1px solid rgba(245,158,11,.25); border-radius: 4px; padding: 2px 7px; }
-  .hdr-right { display: flex; align-items: center; gap: 12px; }
-  .user-chip { font-size: .78rem; color: var(--dim); }
-  .user-chip span { color: var(--amber); font-weight: 500; }
-  .logout-btn { background: transparent; border: 1px solid var(--border); border-radius: 6px; color: var(--muted); padding: 4px 10px; cursor: pointer; font-size: .75rem; transition: .15s; }
-  .logout-btn:hover { border-color: var(--border2); color: var(--dim); }
+    body {
+      font-family: var(--sans);
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
 
-  /* nav tabs */
-  .nav { background: var(--surface); border-bottom: 1px solid var(--border); padding: 0 1.5rem; display: flex; gap: 2px; }
-  .nav-btn { background: transparent; border: none; border-bottom: 2px solid transparent; color: var(--muted); padding: .6rem 1rem; cursor: pointer; font-family: var(--sans); font-size: .825rem; font-weight: 400; transition: .15s; white-space: nowrap; }
-  .nav-btn.active { color: var(--amber); border-bottom-color: var(--amber); font-weight: 500; }
-  .nav-btn:hover:not(.active) { color: var(--dim); }
+    /* ── LOGIN ── */
+    #login-screen {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 2rem;
+      background: radial-gradient(ellipse 60% 50% at 50% 40%, rgba(245, 158, 11, .07) 0%, transparent 70%), var(--bg);
+    }
 
-  /* main content */
-  .main { flex: 1; padding: 1.5rem; max-width: 1400px; margin: 0 auto; width: 100%; }
+    .login-card {
+      width: 360px;
+      background: var(--surface);
+      border: 1px solid var(--border2);
+      border-radius: 16px;
+      padding: 2.5rem;
+      box-shadow: 0 40px 80px rgba(0, 0, 0, .6);
+    }
 
-  /* date tabs */
-  .date-tabs { display: flex; gap: 6px; margin-bottom: 1.25rem; flex-wrap: wrap; }
-  .date-tab {
-    background: var(--panel); border: 1px solid var(--border); border-radius: 8px;
-    padding: .45rem .9rem; cursor: pointer; font-size: .8rem; color: var(--dim);
-    transition: .15s; position: relative; font-family: var(--mono);
-  }
-  .date-tab.active { background: rgba(245,158,11,.12); border-color: var(--amber); color: var(--amber); }
-  .date-tab .dot { position: absolute; top: -3px; right: -3px; width: 8px; height: 8px; border-radius: 50%; background: var(--red); border: 2px solid var(--bg); display: none; }
-  .date-tab .dot.show { display: block; }
-  .date-tab .g-dot { background: var(--green); }
+    .login-logo {
+      font-size: 2.2rem;
+      text-align: center;
+      margin-bottom: .5rem;
+    }
 
-  /* shift toggle */
-  .shift-row { display: flex; align-items: center; gap: 12px; margin-bottom: 1.25rem; }
-  .shift-toggle { display: flex; background: var(--panel); border: 1px solid var(--border); border-radius: 8px; padding: 3px; }
-  .shift-btn {
-    padding: .45rem 1.25rem; border-radius: 6px; border: none; background: transparent;
-    cursor: pointer; font-family: var(--sans); font-size: .8rem; font-weight: 500;
-    color: var(--muted); transition: .15s;
-  }
-  .shift-btn.day.active  { background: rgba(251,191,36,.15); color: #fbbf24; }
-  .shift-btn.night.active { background: rgba(99,102,241,.15); color: #818cf8; }
+    .login-title {
+      font-size: 1.1rem;
+      font-weight: 600;
+      text-align: center;
+      color: var(--text-h);
+      margin-bottom: .25rem;
+    }
 
-  /* stats strip */
-  .stats-strip { display: flex; gap: 10px; margin-bottom: 1.25rem; flex-wrap: wrap; }
-  .stat-pill {
-    background: var(--panel); border: 1px solid var(--border); border-radius: 8px;
-    padding: .35rem .85rem; font-size: .78rem; display: flex; align-items: center; gap: 6px;
-  }
-  .stat-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+    .login-sub {
+      font-size: .78rem;
+      color: var(--muted);
+      text-align: center;
+      font-family: var(--mono);
+      margin-bottom: 2rem;
+    }
 
-  /* legend */
-  .legend { display: flex; gap: 16px; margin-bottom: 1rem; font-size: .75rem; color: var(--muted); align-items: center; }
-  .legend-item { display: flex; align-items: center; gap: 5px; }
-  .legend-sq { width: 10px; height: 10px; border-radius: 3px; }
+    .login-label {
+      font-size: .75rem;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      margin-bottom: .6rem;
+      display: block;
+    }
 
-  /* slots grid */
-  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(175px, 1fr)); gap: 8px; }
+    .login-btn {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      width: 100%;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: .7rem 1rem;
+      color: var(--text);
+      cursor: pointer;
+      margin-bottom: .4rem;
+      font-family: var(--sans);
+      font-size: .875rem;
+      transition: all .15s;
+    }
 
-  .slot-card {
-    background: var(--panel); border: 1px solid var(--border); border-radius: 10px;
-    padding: 11px 13px; position: relative; transition: border-color .15s;
-  }
-  .slot-card.static-card { opacity: .65; }
-  .slot-card.confirmed  { background: rgba(34,197,94,.06);  border-color: rgba(34,197,94,.35); }
-  .slot-card.issue      { background: rgba(239,68,68,.07);  border-color: rgba(239,68,68,.35); }
+    .login-btn:hover {
+      background: rgba(245, 158, 11, .12);
+      border-color: var(--amber);
+      color: var(--amber);
+    }
 
-  .slot-time { font-family: var(--mono); font-size: .95rem; font-weight: 500; color: var(--text-h); margin-bottom: 3px; }
-  .slot-name { font-size: .78rem; color: var(--dim); margin-bottom: 7px; line-height: 1.3; }
-  .slot-name.patrol { color: var(--text); font-weight: 500; }
-  .slot-badge { display: inline-flex; align-items: center; gap: 4px; font-size: .7rem; font-family: var(--mono); padding: 2px 7px; border-radius: 4px; margin-bottom: 6px; }
-  .slot-badge.confirmed { background: rgba(34,197,94,.12); color: var(--green); }
-  .slot-badge.issue     { background: rgba(239,68,68,.12); color: var(--red); }
-  .slot-who  { font-size: .7rem; color: var(--muted); margin-top: 2px; }
-  .slot-comment { font-size: .7rem; color: #fbbf24; margin-top: 3px; font-style: italic; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .login-btn .avatar {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: .7rem;
+      font-weight: 600;
+      flex-shrink: 0;
+    }
 
-  .slot-btns { display: flex; gap: 5px; margin-top: 8px; }
-  .slot-btn {
-    flex: 1; padding: 5px 0; border-radius: 6px; border: 1px solid; cursor: pointer;
-    font-family: var(--sans); font-size: .72rem; font-weight: 500; transition: .15s;
-  }
-  .slot-btn.ok    { background: rgba(34,197,94,.08); border-color: rgba(34,197,94,.35); color: var(--green); }
-  .slot-btn.ok:hover    { background: rgba(34,197,94,.2); }
-  .slot-btn.issue { background: rgba(239,68,68,.08); border-color: rgba(239,68,68,.35); color: var(--red); }
-  .slot-btn.issue:hover { background: rgba(239,68,68,.2); }
+    /* ── APP SHELL ── */
+    #app {
+      display: none;
+      flex-direction: column;
+      min-height: 100vh;
+    }
 
-  /* ── MODAL ── */
-  .modal-bg {
-    position: fixed; inset: 0; background: rgba(0,0,0,.7); z-index: 500;
-    display: flex; align-items: center; justify-content: center;
-    opacity: 0; pointer-events: none; transition: opacity .2s; padding: 1rem;
-  }
-  .modal-bg.open { opacity: 1; pointer-events: all; }
-  .modal {
-    background: var(--surface); border: 1px solid var(--border2); border-radius: 16px;
-    padding: 1.75rem; width: 100%; max-width: 400px; box-shadow: 0 30px 80px rgba(0,0,0,.7);
-    transform: translateY(20px); transition: transform .2s;
-  }
-  .modal-bg.open .modal { transform: translateY(0); }
-  .modal-title { font-size: 1rem; font-weight: 600; color: var(--text-h); margin-bottom: .25rem; }
-  .modal-sub { font-size: .78rem; color: var(--muted); font-family: var(--mono); margin-bottom: 1.25rem; }
-  .field-label { font-size: .72rem; color: var(--muted); text-transform: uppercase; letter-spacing: .07em; margin-bottom: .35rem; display: block; }
-  .field-value { background: var(--bg); border: 1px solid var(--border); border-radius: 7px; padding: .55rem .85rem; font-size: .875rem; color: var(--blue); margin-bottom: 1rem; }
-  textarea#modal-comment {
-    width: 100%; background: var(--bg); border: 1px solid var(--border);
-    border-radius: 7px; padding: .55rem .85rem; color: var(--text);
-    font-family: var(--sans); font-size: .875rem; resize: vertical; min-height: 80px;
-    outline: none; margin-bottom: 1.25rem; transition: border-color .15s;
-  }
-  textarea#modal-comment:focus { border-color: var(--amber); }
-  .modal-btns { display: flex; gap: 8px; }
-  .modal-cancel {
-    padding: .6rem 1rem; background: transparent; border: 1px solid var(--border);
-    border-radius: 8px; color: var(--muted); cursor: pointer; font-family: var(--sans); font-size: .875rem;
-  }
-  .modal-confirm {
-    flex: 1; padding: .6rem 1rem; border-radius: 8px; border: 1px solid;
-    cursor: pointer; font-family: var(--sans); font-size: .875rem; font-weight: 600;
-  }
-  .modal-confirm.ok    { background: rgba(34,197,94,.12); border-color: var(--green); color: var(--green); }
-  .modal-confirm.issue { background: rgba(239,68,68,.12); border-color: var(--red); color: var(--red); }
+    /* header */
+    .hdr {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 1.5rem;
+      height: 52px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
 
-  /* ── LOG TAB ── */
-  .log-filters { display: flex; gap: 8px; margin-bottom: 1rem; flex-wrap: wrap; }
-  .filter-btn {
-    background: var(--panel); border: 1px solid var(--border); border-radius: 6px;
-    padding: .3rem .75rem; cursor: pointer; font-size: .75rem; color: var(--muted);
-    font-family: var(--sans); transition: .15s;
-  }
-  .filter-btn.active { border-color: var(--amber); color: var(--amber); background: rgba(245,158,11,.08); }
-  .log-entry {
-    background: var(--panel); border: 1px solid var(--border); border-radius: 8px;
-    padding: .75rem 1rem; margin-bottom: 6px; display: flex; gap: 12px; align-items: flex-start;
-  }
-  .log-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; margin-top: 3px; }
-  .log-main { flex: 1; min-width: 0; }
-  .log-head { font-size: .825rem; font-weight: 500; color: var(--text-h); margin-bottom: 2px; }
-  .log-meta { font-size: .72rem; color: var(--muted); font-family: var(--mono); }
-  .log-cmt { font-size: .72rem; color: #fbbf24; margin-top: 3px; }
-  .log-status { font-size: .72rem; font-weight: 600; font-family: var(--mono); white-space: nowrap; }
+    .hdr-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
 
-  /* export btn */
-  .export-btn {
-    background: rgba(245,158,11,.1); border: 1px solid rgba(245,158,11,.3);
-    border-radius: 7px; padding: .4rem .9rem; color: var(--amber); cursor: pointer;
-    font-size: .78rem; font-family: var(--sans); margin-left: auto; display: block;
-    margin-bottom: 1rem; transition: .15s;
-  }
-  .export-btn:hover { background: rgba(245,158,11,.18); }
+    .hdr-logo {
+      font-size: 1.2rem;
+    }
 
-  /* ── STATS TAB ── */
-  .stats-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px; margin-bottom: 1.5rem; }
-  .stat-card { background: var(--panel); border: 1px solid var(--border); border-radius: 10px; padding: 1rem 1.1rem; }
-  .stat-date { font-family: var(--mono); font-size: .8rem; color: var(--amber); font-weight: 500; margin-bottom: .6rem; }
-  .stat-row { display: flex; justify-content: space-between; font-size: .78rem; padding: .15rem 0; }
-  .stat-bar-bg { height: 4px; background: var(--border); border-radius: 2px; margin-top: .6rem; }
-  .stat-bar { height: 100%; border-radius: 2px; transition: width .4s; }
-  .stat-pct { font-size: .68rem; color: var(--muted); margin-top: .25rem; font-family: var(--mono); }
+    .hdr-title {
+      font-size: .95rem;
+      font-weight: 600;
+      color: var(--text-h);
+    }
 
-  /* empty state */
-  .empty { text-align: center; padding: 3rem; color: var(--muted); font-size: .875rem; }
-  .empty-icon { font-size: 2rem; margin-bottom: .5rem; }
+    .hdr-badge {
+      font-family: var(--mono);
+      font-size: .7rem;
+      color: var(--amber);
+      background: rgba(245, 158, 11, .1);
+      border: 1px solid rgba(245, 158, 11, .25);
+      border-radius: 4px;
+      padding: 2px 7px;
+      transition: color .3s, background .3s, border-color .3s;
+    }
+    .hdr-badge.live {
+      color: var(--green);
+      background: rgba(34, 197, 94, .1);
+      border-color: rgba(34, 197, 94, .3);
+    }
+    .hdr-badge.offline {
+      color: var(--amber);
+      background: rgba(245, 158, 11, .1);
+      border-color: rgba(245, 158, 11, .25);
+    }
 
-  /* ── BACKUP TAB ── */
-  .backup-notice { background: rgba(251,191,36,.06); border: 1px solid rgba(251,191,36,.2); border-radius: 10px; padding: 1rem 1.1rem; margin-bottom: 1rem; }
-  .backup-card   { background: var(--panel); border: 1px solid var(--border); border-radius: 10px; padding: 1.1rem 1.25rem; margin-bottom: .75rem; }
-  .backup-section-title { font-size: .875rem; font-weight: 600; color: var(--text-h); margin-bottom: .35rem; }
-  .bk-btn {
-    display: inline-flex; align-items: center; gap: 6px;
-    padding: .55rem 1.1rem; border-radius: 8px; border: 1px solid;
-    font-family: var(--sans); font-size: .825rem; font-weight: 500; cursor: pointer; transition: .15s;
-  }
-  .bk-btn.amber { background: rgba(245,158,11,.1); border-color: rgba(245,158,11,.4); color: var(--amber); }
-  .bk-btn.amber:hover { background: rgba(245,158,11,.2); }
-  .bk-btn.blue  { background: rgba(59,130,246,.1);  border-color: rgba(59,130,246,.4); color: var(--blue); }
-  .bk-btn.blue:hover  { background: rgba(59,130,246,.2); }
-  .bk-btn.red   { background: rgba(239,68,68,.08);  border-color: rgba(239,68,68,.3); color: var(--red); }
-  .bk-btn.red:hover   { background: rgba(239,68,68,.18); }
+    .hdr-right {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
 
-  /* responsive tweaks */
-  @media (max-width: 600px) {
-    .main { padding: 1rem; }
-    .hdr { padding: 0 1rem; }
-    .hdr-title { display: none; }
-    .grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); }
-  }
-</style>
+    .user-chip {
+      font-size: .78rem;
+      color: var(--dim);
+    }
+
+    .user-chip span {
+      color: var(--amber);
+      font-weight: 500;
+    }
+
+    .logout-btn {
+      background: transparent;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      color: var(--muted);
+      padding: 4px 10px;
+      cursor: pointer;
+      font-size: .75rem;
+      transition: .15s;
+    }
+
+    .logout-btn:hover {
+      border-color: var(--border2);
+      color: var(--dim);
+    }
+
+    /* nav tabs */
+    .nav {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 0 1.5rem;
+      display: flex;
+      gap: 2px;
+    }
+
+    .nav-btn {
+      background: transparent;
+      border: none;
+      border-bottom: 2px solid transparent;
+      color: var(--muted);
+      padding: .6rem 1rem;
+      cursor: pointer;
+      font-family: var(--sans);
+      font-size: .825rem;
+      font-weight: 400;
+      transition: .15s;
+      white-space: nowrap;
+    }
+
+    .nav-btn.active {
+      color: var(--amber);
+      border-bottom-color: var(--amber);
+      font-weight: 500;
+    }
+
+    .nav-btn:hover:not(.active) {
+      color: var(--dim);
+    }
+
+    /* main content */
+    .main {
+      flex: 1;
+      padding: 1.5rem;
+      max-width: 1400px;
+      margin: 0 auto;
+      width: 100%;
+    }
+
+    /* date tabs */
+    .date-tabs {
+      display: flex;
+      gap: 6px;
+      margin-bottom: 1.25rem;
+      flex-wrap: wrap;
+    }
+
+    .date-tab {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: .45rem .9rem;
+      cursor: pointer;
+      font-size: .8rem;
+      color: var(--dim);
+      transition: .15s;
+      position: relative;
+      font-family: var(--mono);
+    }
+
+    .date-tab.active {
+      background: rgba(245, 158, 11, .12);
+      border-color: var(--amber);
+      color: var(--amber);
+    }
+
+    .date-tab .dot {
+      position: absolute;
+      top: -3px;
+      right: -3px;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--red);
+      border: 2px solid var(--bg);
+      display: none;
+    }
+
+    .date-tab .dot.show {
+      display: block;
+    }
+
+    .date-tab .g-dot {
+      background: var(--green);
+    }
+
+    /* shift toggle */
+    .shift-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 1.25rem;
+    }
+
+    .shift-toggle {
+      display: flex;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 3px;
+    }
+
+    .shift-btn {
+      padding: .45rem 1.25rem;
+      border-radius: 6px;
+      border: none;
+      background: transparent;
+      cursor: pointer;
+      font-family: var(--sans);
+      font-size: .8rem;
+      font-weight: 500;
+      color: var(--muted);
+      transition: .15s;
+    }
+
+    .shift-btn.day.active {
+      background: rgba(251, 191, 36, .15);
+      color: #fbbf24;
+    }
+
+    .shift-btn.night.active {
+      background: rgba(99, 102, 241, .15);
+      color: #818cf8;
+    }
+
+    /* stats strip */
+    .stats-strip {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 1.25rem;
+      flex-wrap: wrap;
+    }
+
+    .stat-pill {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: .35rem .85rem;
+      font-size: .78rem;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .stat-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    /* legend */
+    .legend {
+      display: flex;
+      gap: 16px;
+      margin-bottom: 1rem;
+      font-size: .75rem;
+      color: var(--muted);
+      align-items: center;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .legend-sq {
+      width: 10px;
+      height: 10px;
+      border-radius: 3px;
+    }
+
+    /* slots grid */
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(175px, 1fr));
+      gap: 8px;
+    }
+
+    .slot-card {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 11px 13px;
+      position: relative;
+      transition: border-color .15s;
+    }
+
+    .slot-card.static-card {
+      opacity: .65;
+    }
+
+    .slot-card.confirmed {
+      background: rgba(34, 197, 94, .06);
+      border-color: rgba(34, 197, 94, .35);
+    }
+
+    .slot-card.issue {
+      background: rgba(239, 68, 68, .07);
+      border-color: rgba(239, 68, 68, .35);
+    }
+
+    .slot-time {
+      font-family: var(--mono);
+      font-size: .95rem;
+      font-weight: 500;
+      color: var(--text-h);
+      margin-bottom: 3px;
+    }
+
+    .slot-name {
+      font-size: .78rem;
+      color: var(--dim);
+      margin-bottom: 7px;
+      line-height: 1.3;
+    }
+
+    .slot-name.patrol {
+      color: var(--text);
+      font-weight: 500;
+    }
+
+    .slot-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: .7rem;
+      font-family: var(--mono);
+      padding: 2px 7px;
+      border-radius: 4px;
+      margin-bottom: 6px;
+    }
+
+    .slot-badge.confirmed {
+      background: rgba(34, 197, 94, .12);
+      color: var(--green);
+    }
+
+    .slot-badge.issue {
+      background: rgba(239, 68, 68, .12);
+      color: var(--red);
+    }
+
+    .slot-who {
+      font-size: .7rem;
+      color: var(--muted);
+      margin-top: 2px;
+    }
+
+    .slot-comment {
+      font-size: .7rem;
+      color: #fbbf24;
+      margin-top: 3px;
+      font-style: italic;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .slot-btns {
+      display: flex;
+      gap: 5px;
+      margin-top: 8px;
+    }
+
+    .slot-btn {
+      flex: 1;
+      padding: 5px 0;
+      border-radius: 6px;
+      border: 1px solid;
+      cursor: pointer;
+      font-family: var(--sans);
+      font-size: .72rem;
+      font-weight: 500;
+      transition: .15s;
+    }
+
+    .slot-btn.ok {
+      background: rgba(34, 197, 94, .08);
+      border-color: rgba(34, 197, 94, .35);
+      color: var(--green);
+    }
+
+    .slot-btn.ok:hover {
+      background: rgba(34, 197, 94, .2);
+    }
+
+    .slot-btn.issue {
+      background: rgba(239, 68, 68, .08);
+      border-color: rgba(239, 68, 68, .35);
+      color: var(--red);
+    }
+
+    .slot-btn.issue:hover {
+      background: rgba(239, 68, 68, .2);
+    }
+
+    /* ── MODAL ── */
+    .modal-bg {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, .7);
+      z-index: 500;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .2s;
+      padding: 1rem;
+    }
+
+    .modal-bg.open {
+      opacity: 1;
+      pointer-events: all;
+    }
+
+    .modal {
+      background: var(--surface);
+      border: 1px solid var(--border2);
+      border-radius: 16px;
+      padding: 1.75rem;
+      width: 100%;
+      max-width: 400px;
+      box-shadow: 0 30px 80px rgba(0, 0, 0, .7);
+      transform: translateY(20px);
+      transition: transform .2s;
+    }
+
+    .modal-bg.open .modal {
+      transform: translateY(0);
+    }
+
+    .modal-title {
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--text-h);
+      margin-bottom: .25rem;
+    }
+
+    .modal-sub {
+      font-size: .78rem;
+      color: var(--muted);
+      font-family: var(--mono);
+      margin-bottom: 1.25rem;
+    }
+
+    .field-label {
+      font-size: .72rem;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: .07em;
+      margin-bottom: .35rem;
+      display: block;
+    }
+
+    .field-value {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 7px;
+      padding: .55rem .85rem;
+      font-size: .875rem;
+      color: var(--blue);
+      margin-bottom: 1rem;
+    }
+
+    textarea#modal-comment {
+      width: 100%;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 7px;
+      padding: .55rem .85rem;
+      color: var(--text);
+      font-family: var(--sans);
+      font-size: .875rem;
+      resize: vertical;
+      min-height: 80px;
+      outline: none;
+      margin-bottom: 1.25rem;
+      transition: border-color .15s;
+    }
+
+    textarea#modal-comment:focus {
+      border-color: var(--amber);
+    }
+
+    .modal-btns {
+      display: flex;
+      gap: 8px;
+    }
+
+    .modal-cancel {
+      padding: .6rem 1rem;
+      background: transparent;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--muted);
+      cursor: pointer;
+      font-family: var(--sans);
+      font-size: .875rem;
+    }
+
+    .modal-confirm {
+      flex: 1;
+      padding: .6rem 1rem;
+      border-radius: 8px;
+      border: 1px solid;
+      cursor: pointer;
+      font-family: var(--sans);
+      font-size: .875rem;
+      font-weight: 600;
+    }
+
+    .modal-confirm.ok {
+      background: rgba(34, 197, 94, .12);
+      border-color: var(--green);
+      color: var(--green);
+    }
+
+    .modal-confirm.issue {
+      background: rgba(239, 68, 68, .12);
+      border-color: var(--red);
+      color: var(--red);
+    }
+
+    /* ── LOG TAB ── */
+    .log-filters {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .filter-btn {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: .3rem .75rem;
+      cursor: pointer;
+      font-size: .75rem;
+      color: var(--muted);
+      font-family: var(--sans);
+      transition: .15s;
+    }
+
+    .filter-btn.active {
+      border-color: var(--amber);
+      color: var(--amber);
+      background: rgba(245, 158, 11, .08);
+    }
+
+    .log-entry {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: .75rem 1rem;
+      margin-bottom: 6px;
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+    }
+
+    .log-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      flex-shrink: 0;
+      margin-top: 3px;
+    }
+
+    .log-main {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .log-head {
+      font-size: .825rem;
+      font-weight: 500;
+      color: var(--text-h);
+      margin-bottom: 2px;
+    }
+
+    .log-meta {
+      font-size: .72rem;
+      color: var(--muted);
+      font-family: var(--mono);
+    }
+
+    .log-cmt {
+      font-size: .72rem;
+      color: #fbbf24;
+      margin-top: 3px;
+    }
+
+    .log-status {
+      font-size: .72rem;
+      font-weight: 600;
+      font-family: var(--mono);
+      white-space: nowrap;
+    }
+
+    /* export btn */
+    .export-btn {
+      background: rgba(245, 158, 11, .1);
+      border: 1px solid rgba(245, 158, 11, .3);
+      border-radius: 7px;
+      padding: .4rem .9rem;
+      color: var(--amber);
+      cursor: pointer;
+      font-size: .78rem;
+      font-family: var(--sans);
+      margin-left: auto;
+      display: block;
+      margin-bottom: 1rem;
+      transition: .15s;
+    }
+
+    .export-btn:hover {
+      background: rgba(245, 158, 11, .18);
+    }
+
+    /* ── STATS TAB ── */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 10px;
+      margin-bottom: 1.5rem;
+    }
+
+    .stat-card {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 1rem 1.1rem;
+    }
+
+    .stat-date {
+      font-family: var(--mono);
+      font-size: .8rem;
+      color: var(--amber);
+      font-weight: 500;
+      margin-bottom: .6rem;
+    }
+
+    .stat-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: .78rem;
+      padding: .15rem 0;
+    }
+
+    .stat-bar-bg {
+      height: 4px;
+      background: var(--border);
+      border-radius: 2px;
+      margin-top: .6rem;
+    }
+
+    .stat-bar {
+      height: 100%;
+      border-radius: 2px;
+      transition: width .4s;
+    }
+
+    .stat-pct {
+      font-size: .68rem;
+      color: var(--muted);
+      margin-top: .25rem;
+      font-family: var(--mono);
+    }
+
+    /* empty state */
+    .empty {
+      text-align: center;
+      padding: 3rem;
+      color: var(--muted);
+      font-size: .875rem;
+    }
+
+    .empty-icon {
+      font-size: 2rem;
+      margin-bottom: .5rem;
+    }
+
+    /* ── BACKUP TAB ── */
+    .backup-notice {
+      background: rgba(251, 191, 36, .06);
+      border: 1px solid rgba(251, 191, 36, .2);
+      border-radius: 10px;
+      padding: 1rem 1.1rem;
+      margin-bottom: 1rem;
+    }
+
+    .backup-card {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 1.1rem 1.25rem;
+      margin-bottom: .75rem;
+    }
+
+    .backup-section-title {
+      font-size: .875rem;
+      font-weight: 600;
+      color: var(--text-h);
+      margin-bottom: .35rem;
+    }
+
+    .bk-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: .55rem 1.1rem;
+      border-radius: 8px;
+      border: 1px solid;
+      font-family: var(--sans);
+      font-size: .825rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: .15s;
+    }
+
+    .bk-btn.amber {
+      background: rgba(245, 158, 11, .1);
+      border-color: rgba(245, 158, 11, .4);
+      color: var(--amber);
+    }
+
+    .bk-btn.amber:hover {
+      background: rgba(245, 158, 11, .2);
+    }
+
+    .bk-btn.blue {
+      background: rgba(59, 130, 246, .1);
+      border-color: rgba(59, 130, 246, .4);
+      color: var(--blue);
+    }
+
+    .bk-btn.blue:hover {
+      background: rgba(59, 130, 246, .2);
+    }
+
+    .bk-btn.red {
+      background: rgba(239, 68, 68, .08);
+      border-color: rgba(239, 68, 68, .3);
+      color: var(--red);
+    }
+
+    .bk-btn.red:hover {
+      background: rgba(239, 68, 68, .18);
+    }
+
+    /* responsive tweaks */
+    @media (max-width: 600px) {
+      .main {
+        padding: 1rem;
+      }
+
+      .hdr {
+        padding: 0 1rem;
+      }
+
+      .hdr-title {
+        display: none;
+      }
+
+      .grid {
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+      }
+    }
+  </style>
 </head>
+
 <body>
 
-<!-- ── LOGIN SCREEN ── -->
-<div id="login-screen">
-  <div class="login-card">
-    <div class="login-logo"><img src="data:image/png;base64,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" alt="SICIM" style="height:56px;width:auto;display:block;margin:0 auto;filter:invert(1) grayscale(1);mix-blend-mode:screen"></div>
-    <div class="login-title">TCF Patrol Confirmation System</div>
-    <div class="login-sub">SICIM · NBS (Night Bird Security) · March 24–31 2026</div>
-    <span class="login-label">Select your identity to continue</span>
-    <div id="login-list"></div>
-  </div>
-</div>
-
-<!-- ── MAIN APP ── -->
-<div id="app">
-  <header class="hdr">
-    <div class="hdr-left">
-      <img src="data:image/png;base64,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" alt="SICIM" style="height:28px;width:auto;display:block;filter:invert(1) grayscale(1);mix-blend-mode:screen">
-      <span class="hdr-title">SICIM TCF Patrol Confirmation System</span>
-      <span class="hdr-badge" id="sync-badge">● LIVE</span>
-    </div>
-    <div class="hdr-right">
-      <span class="user-chip">Signed in as <span id="user-label">—</span></span>
-      <button class="logout-btn" onclick="logout()">Switch User</button>
-    </div>
-  </header>
-
-  <nav class="nav">
-    <button class="nav-btn active" onclick="setTab('dashboard',this)">📋 Dashboard</button>
-    <button class="nav-btn" onclick="setTab('log',this)">📜 Activity Log</button>
-    <button class="nav-btn" onclick="setTab('stats',this)">📊 Statistics</button>
-    <button class="nav-btn" onclick="setTab('backup',this)">💾 Backup / Restore</button>
-  </nav>
-
-  <!-- DASHBOARD TAB -->
-  <div id="tab-dashboard" class="main">
-    <div class="date-tabs" id="date-tabs"></div>
-
-    <div class="shift-row">
-      <div class="shift-toggle">
-        <button class="shift-btn day active" onclick="setShift('DAY',this)">☀️ Day Shift</button>
-        <button class="shift-btn night" onclick="setShift('NIGHT',this)">🌙 Night Shift</button>
+  <!-- ── LOGIN SCREEN ── -->
+  <div id="login-screen">
+    <div class="login-card">
+      <div class="login-logo"><img
+          src="data:image/png;base64,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"
+          alt="SICIM"
+          style="height:56px;width:auto;display:block;margin:0 auto;filter:invert(1) grayscale(1);mix-blend-mode:screen">
       </div>
-      <div class="stats-strip" id="shift-stats"></div>
+      <div class="login-title">TCF Patrol Confirmation System</div>
+      <div class="login-sub">SICIM · NBS (Night Bird Security) · March 24–31 2026</div>
+      <span class="login-label">Select your identity to continue</span>
+      <div id="login-list"></div>
     </div>
-
-    <div class="legend">
-      <div class="legend-item"><div class="legend-sq" style="background:var(--green)"></div> Confirmed</div>
-      <div class="legend-item"><div class="legend-sq" style="background:var(--red)"></div> Issue Reported</div>
-      <div class="legend-item"><div class="legend-sq" style="background:rgba(255,255,255,.1)"></div> Pending</div>
-      <div class="legend-item" style="opacity:.5"><div class="legend-sq" style="border:1px solid var(--border)"></div> Static Post</div>
-    </div>
-
-    <div class="grid" id="slots-grid"></div>
   </div>
 
-  <!-- LOG TAB -->
-  <div id="tab-log" class="main" style="display:none">
-    <div style="display:flex; align-items:center; gap:12px; margin-bottom:1rem; flex-wrap:wrap;">
-      <div class="log-filters" id="log-filters">
-        <button class="filter-btn active" onclick="setLogFilter('all',this)">All</button>
-        <button class="filter-btn" onclick="setLogFilter('green',this)">Confirmed</button>
-        <button class="filter-btn" onclick="setLogFilter('red',this)">Issues</button>
+  <!-- ── MAIN APP ── -->
+  <div id="app">
+    <header class="hdr">
+      <div class="hdr-left">
+        <img
+          src="data:image/png;base64,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"
+          alt="SICIM" style="height:28px;width:auto;display:block;filter:invert(1) grayscale(1);mix-blend-mode:screen">
+        <span class="hdr-title">SICIM TCF Patrol Confirmation System</span>
+        <span class="hdr-badge" id="sync-badge">● LIVE</span>
       </div>
-      <button class="export-btn" onclick="exportCSV()">⬇ Export CSV</button>
-    </div>
-    <div id="log-list"></div>
-  </div>
+      <div class="hdr-right">
+        <span class="user-chip">Signed in as <span id="user-label">—</span></span>
+        <button class="logout-btn" onclick="logout()">Switch User</button>
+      </div>
+    </header>
 
-  <!-- STATS TAB -->
-  <div id="tab-stats" class="main" style="display:none">
-    <div class="stats-grid" id="stats-grid"></div>
-    <div id="weekly-summary"></div>
-  </div>
+    <nav class="nav">
+      <button class="nav-btn active" onclick="setTab('dashboard',this)">📋 Dashboard</button>
+      <button class="nav-btn" onclick="setTab('log',this)">📜 Activity Log</button>
+      <button class="nav-btn" onclick="setTab('stats',this)">📊 Statistics</button>
+      <button class="nav-btn" onclick="setTab('backup',this)">💾 Backup / Restore</button>
+    </nav>
 
-  <!-- BACKUP TAB -->
-  <div id="tab-backup" class="main" style="display:none">
-    <div style="max-width:560px">
-      <div class="backup-notice">
-      <div style="font-size:.85rem;font-weight:600;color:#fbbf24;margin-bottom:.4rem">⚠ SharePoint / iframe storage notice</div>
-        <div style="font-size:.78rem;color:var(--dim);line-height:1.6">
-          SharePoint embeds files in a sandboxed iframe that blocks browser storage. Data entered here is held <strong>in memory only</strong> for this session.
-          Use <strong>Save Backup</strong> after each session and <strong>Load Backup</strong> at the start of the next to preserve all confirmations.
-          For permanent shared storage, connect to a SharePoint List via Power Apps (see architecture notes).
+    <!-- DASHBOARD TAB -->
+    <div id="tab-dashboard" class="main">
+      <div class="date-tabs" id="date-tabs"></div>
+
+      <div class="shift-row">
+        <div class="shift-toggle">
+          <button class="shift-btn day active" onclick="setShift('DAY',this)">☀️ Day Shift</button>
+          <button class="shift-btn night" onclick="setShift('NIGHT',this)">🌙 Night Shift</button>
+        </div>
+        <div class="stats-strip" id="shift-stats"></div>
+      </div>
+
+      <div class="legend">
+        <div class="legend-item">
+          <div class="legend-sq" style="background:var(--green)"></div> Confirmed
+        </div>
+        <div class="legend-item">
+          <div class="legend-sq" style="background:var(--red)"></div> Issue Reported
+        </div>
+        <div class="legend-item">
+          <div class="legend-sq" style="background:rgba(255,255,255,.1)"></div> Pending
+        </div>
+        <div class="legend-item" style="opacity:.5">
+          <div class="legend-sq" style="border:1px solid var(--border)"></div> Static Post
         </div>
       </div>
-      <div class="backup-card">
-        <div class="backup-section-title">💾 Save session data</div>
-        <div style="font-size:.78rem;color:var(--muted);margin-bottom:.9rem">Downloads a JSON file containing all confirmations entered this session.</div>
-        <button class="bk-btn amber" onclick="saveBackup()">⬇ Download Backup File</button>
+
+      <div class="grid" id="slots-grid"></div>
+    </div>
+
+    <!-- LOG TAB -->
+    <div id="tab-log" class="main" style="display:none">
+      <div style="display:flex; align-items:center; gap:12px; margin-bottom:1rem; flex-wrap:wrap;">
+        <div class="log-filters" id="log-filters">
+          <button class="filter-btn active" onclick="setLogFilter('all',this)">All</button>
+          <button class="filter-btn" onclick="setLogFilter('green',this)">Confirmed</button>
+          <button class="filter-btn" onclick="setLogFilter('red',this)">Issues</button>
+        </div>
+        <button class="export-btn" onclick="exportCSV()">⬇ Export CSV</button>
       </div>
-      <div class="backup-card">
-        <div class="backup-section-title">📂 Load previous backup</div>
-        <div style="font-size:.78rem;color:var(--muted);margin-bottom:.9rem">Upload a previously saved backup JSON to restore all confirmations.</div>
-        <label class="bk-btn blue" style="cursor:pointer">
-          ⬆ Load Backup File
-          <input type="file" accept=".json" style="display:none" onchange="loadBackup(this)">
-        </label>
-        <div id="backup-status" style="margin-top:.75rem;font-size:.78rem;color:var(--green);display:none"></div>
-      </div>
-      <div class="backup-card">
-        <div class="backup-section-title">🗑 Clear all data</div>
-        <div style="font-size:.78rem;color:var(--muted);margin-bottom:.9rem">Wipe all confirmations from memory. Cannot be undone.</div>
-        <button class="bk-btn red" onclick="clearAll()">Clear session data</button>
+      <div id="log-list"></div>
+    </div>
+
+    <!-- STATS TAB -->
+    <div id="tab-stats" class="main" style="display:none">
+      <div class="stats-grid" id="stats-grid"></div>
+      <div id="weekly-summary"></div>
+    </div>
+
+    <!-- BACKUP TAB -->
+    <div id="tab-backup" class="main" style="display:none">
+      <div style="max-width:560px">
+        <div class="backup-notice">
+          <div style="font-size:.85rem;font-weight:600;color:#22c55e;margin-bottom:.4rem">☁ Cloud Storage Active</div>
+          <div style="font-size:.78rem;color:var(--dim);line-height:1.6">
+            All confirmations are automatically saved to the shared cloud database and are visible to all users within
+            <strong>60 seconds</strong>. The sync badge in the header shows ● LIVE when connected.
+            The backup tools below let you export a local snapshot or restore from a file if needed.
+          </div>
+        </div>
+        <div class="backup-card">
+          <div class="backup-section-title">💾 Save session data</div>
+          <div style="font-size:.78rem;color:var(--muted);margin-bottom:.9rem">Downloads a JSON file containing all
+            confirmations entered this session.</div>
+          <button class="bk-btn amber" onclick="saveBackup()">⬇ Download Backup File</button>
+        </div>
+        <div class="backup-card">
+          <div class="backup-section-title">📂 Load previous backup</div>
+          <div style="font-size:.78rem;color:var(--muted);margin-bottom:.9rem">Upload a previously saved backup JSON to
+            restore all confirmations.</div>
+          <label class="bk-btn blue" style="cursor:pointer">
+            ⬆ Load Backup File
+            <input type="file" accept=".json" style="display:none" onchange="loadBackup(this)">
+          </label>
+          <div id="backup-status" style="margin-top:.75rem;font-size:.78rem;color:var(--green);display:none"></div>
+        </div>
+        <div class="backup-card">
+          <div class="backup-section-title">🗑 Clear all data</div>
+          <div style="font-size:.78rem;color:var(--muted);margin-bottom:.9rem">Wipe all confirmations from memory.
+            Cannot be undone.</div>
+          <button class="bk-btn red" onclick="clearAll()">Clear session data</button>
+        </div>
       </div>
     </div>
   </div>
-</div>
 
-<!-- CONFIRMATION MODAL -->
-<div class="modal-bg" id="modal-bg">
-  <div class="modal">
-    <div class="modal-title" id="modal-title">Confirm Patrol Completion</div>
-    <div class="modal-sub" id="modal-sub">—</div>
-    <span class="field-label">Confirming as</span>
-    <div class="field-value" id="modal-user">—</div>
-    <span class="field-label">Timestamp</span>
-    <div class="field-value" id="modal-ts">—</div>
-    <span class="field-label">Comment (optional)</span>
-    <textarea id="modal-comment" placeholder="Add a note…"></textarea>
-    <div class="modal-btns">
-      <button class="modal-cancel" onclick="closeModal()">Cancel</button>
-      <button class="modal-confirm" id="modal-confirm-btn" onclick="submitConfirmation()">Confirm</button>
+  <!-- CONFIRMATION MODAL -->
+  <div class="modal-bg" id="modal-bg">
+    <div class="modal">
+      <div class="modal-title" id="modal-title">Confirm Patrol Completion</div>
+      <div class="modal-sub" id="modal-sub">—</div>
+      <span class="field-label">Confirming as</span>
+      <div class="field-value" id="modal-user">—</div>
+      <span class="field-label">Timestamp</span>
+      <div class="field-value" id="modal-ts">—</div>
+      <span class="field-label">Comment (optional)</span>
+      <textarea id="modal-comment" placeholder="Add a note…"></textarea>
+      <div class="modal-btns">
+        <button class="modal-cancel" onclick="closeModal()">Cancel</button>
+        <button class="modal-confirm" id="modal-confirm-btn" onclick="submitConfirmation()">Confirm</button>
+      </div>
     </div>
   </div>
-</div>
 
-<script>
-// ─────────────────────────────────────────────
-//  DATA
-// ─────────────────────────────────────────────
-const DATES = [
-  { label:'Mon 24 Mar', key:'2026-03-24' },
-  { label:'Tue 25 Mar', key:'2026-03-25' },
-  { label:'Wed 26 Mar', key:'2026-03-26' },
-  { label:'Thu 27 Mar', key:'2026-03-27' },
-  { label:'Fri 28 Mar', key:'2026-03-28' },
-  { label:'Sat 29 Mar', key:'2026-03-29' },
-  { label:'Sun 30 Mar', key:'2026-03-30' },
-  { label:'Mon 31 Mar', key:'2026-03-31' },
-];
+  <script>
+    // ─────────────────────────────────────────────
+    //  CLOUD STORAGE CONFIG (JSONBin.io)
+    //  1. Create a free account at https://jsonbin.io
+    //  2. Create a Bin with content: {}
+    //  3. Paste your Bin ID and Master API Key below
+    // ─────────────────────────────────────────────
+    const JSONBIN_BIN_ID  = 'YOUR_BIN_ID_HERE';      // e.g. '6642a1f7acd3cb34a838...' 
+    const JSONBIN_API_KEY = 'YOUR_MASTER_KEY_HERE';   // e.g. '$2a$10$...'
+    const JSONBIN_URL     = `https://api.jsonbin.io/v3/b/${JSONBIN_BIN_ID}`;
+    const POLL_INTERVAL_MS = 60000; // 60 seconds
 
-const DAY_SLOTS = [
-  {time:'08:00',name:'Hashim Shakir',   patrol:true},
-  {time:'08:30',name:'Static ECP 1/2 Day', patrol:false},
-  {time:'09:00',name:'Lucian Moldovan', patrol:true},
-  {time:'09:30',name:'Static ECP 1/2 Day', patrol:false},
-  {time:'10:00',name:'Hashim Shakir',   patrol:true},
-  {time:'10:30',name:'Static ECP 1/2 Day', patrol:false},
-  {time:'11:00',name:'Lucian Moldovan', patrol:true},
-  {time:'11:30',name:'Static ECP 1/2 Day', patrol:false},
-  {time:'12:00',name:'Hashim Shakir',   patrol:true},
-  {time:'12:30',name:'Static ECP 1/2 Day', patrol:false},
-  {time:'13:00',name:'Lucian Moldovan', patrol:true},
-  {time:'13:30',name:'Static ECP 1/2 Day', patrol:false},
-  {time:'14:00',name:'Hashim Shakir',   patrol:true},
-  {time:'14:30',name:'Static ECP 1/2 Day', patrol:false},
-  {time:'15:00',name:'Lucian Moldovan', patrol:true},
-  {time:'15:30',name:'Static ECP 1/2 Day', patrol:false},
-  {time:'16:00',name:'Hashim Shakir',   patrol:true},
-  {time:'16:30',name:'Static ECP 1/2 Day', patrol:false},
-  {time:'17:00',name:'Lucian Moldovan', patrol:true},
-  {time:'17:30',name:'Static ECP 1/2 Day', patrol:false},
-  {time:'18:00',name:'Hashim Shakir',   patrol:true},
-  {time:'18:30',name:'Static ECP 1/2 Day', patrol:false},
-  {time:'19:00',name:'Lucian Moldovan', patrol:true},
-  {time:'19:30',name:'Static ECP 1/2 Day', patrol:false},
-];
+    // ─────────────────────────────────────────────
+    //  DATA
+    // ─────────────────────────────────────────────
+    const DATES = [
+      { label: 'Mon 24 Mar', key: '2026-03-24' },
+      { label: 'Tue 25 Mar', key: '2026-03-25' },
+      { label: 'Wed 26 Mar', key: '2026-03-26' },
+      { label: 'Thu 27 Mar', key: '2026-03-27' },
+      { label: 'Fri 28 Mar', key: '2026-03-28' },
+      { label: 'Sat 29 Mar', key: '2026-03-29' },
+      { label: 'Sun 30 Mar', key: '2026-03-30' },
+      { label: 'Mon 31 Mar', key: '2026-03-31' },
+    ];
 
-const NIGHT_SLOTS = [
-  {time:'20:00',name:'Laith Mohammed',  patrol:true},
-  {time:'20:30',name:'Static ECP 1/2 Night', patrol:false},
-  {time:'21:00',name:'Gabriel Samoila', patrol:true},
-  {time:'21:30',name:'Static ECP 1/2 Night', patrol:false},
-  {time:'22:00',name:'Laith Mohammed',  patrol:true},
-  {time:'22:30',name:'Static ECP 1/2 Night', patrol:false},
-  {time:'23:00',name:'Gabriel Samoila', patrol:true},
-  {time:'23:30',name:'Static ECP 1/2 Night', patrol:false},
-  {time:'00:00',name:'Laith Mohammed',  patrol:true},
-  {time:'00:30',name:'Static ECP 1/2 Night', patrol:false},
-  {time:'01:00',name:'Gabriel Samoila', patrol:true},
-  {time:'01:30',name:'Static ECP 1/2 Night', patrol:false},
-  {time:'02:00',name:'Laith Mohammed',  patrol:true},
-  {time:'02:30',name:'Static ECP 1/2 Night', patrol:false},
-  {time:'03:00',name:'Gabriel Samoila', patrol:true},
-  {time:'03:30',name:'Static ECP 1/2 Night', patrol:false},
-  {time:'04:00',name:'Laith Mohammed',  patrol:true},
-  {time:'04:30',name:'Static ECP 1/2 Night', patrol:false},
-  {time:'05:00',name:'Gabriel Samoila', patrol:true},
-  {time:'05:30',name:'Static ECP 1/2 Night', patrol:false},
-  {time:'06:00',name:'Laith Mohammed',  patrol:true},
-  {time:'06:30',name:'Static ECP 1/2 Night', patrol:false},
-  {time:'07:00',name:'Gabriel Samoila', patrol:true},
-  {time:'07:30',name:'Static ECP 1/2 Night', patrol:false},
-];
+    const DAY_SLOTS = [
+      { time: '08:00', name: 'Hashim Shakir', patrol: true },
+      { time: '08:30', name: 'Static ECP 1/2 Day', patrol: false },
+      { time: '09:00', name: 'Lucian Moldovan', patrol: true },
+      { time: '09:30', name: 'Static ECP 1/2 Day', patrol: false },
+      { time: '10:00', name: 'Hashim Shakir', patrol: true },
+      { time: '10:30', name: 'Static ECP 1/2 Day', patrol: false },
+      { time: '11:00', name: 'Lucian Moldovan', patrol: true },
+      { time: '11:30', name: 'Static ECP 1/2 Day', patrol: false },
+      { time: '12:00', name: 'Hashim Shakir', patrol: true },
+      { time: '12:30', name: 'Static ECP 1/2 Day', patrol: false },
+      { time: '13:00', name: 'Lucian Moldovan', patrol: true },
+      { time: '13:30', name: 'Static ECP 1/2 Day', patrol: false },
+      { time: '14:00', name: 'Hashim Shakir', patrol: true },
+      { time: '14:30', name: 'Static ECP 1/2 Day', patrol: false },
+      { time: '15:00', name: 'Lucian Moldovan', patrol: true },
+      { time: '15:30', name: 'Static ECP 1/2 Day', patrol: false },
+      { time: '16:00', name: 'Hashim Shakir', patrol: true },
+      { time: '16:30', name: 'Static ECP 1/2 Day', patrol: false },
+      { time: '17:00', name: 'Lucian Moldovan', patrol: true },
+      { time: '17:30', name: 'Static ECP 1/2 Day', patrol: false },
+      { time: '18:00', name: 'Hashim Shakir', patrol: true },
+      { time: '18:30', name: 'Static ECP 1/2 Day', patrol: false },
+      { time: '19:00', name: 'Lucian Moldovan', patrol: true },
+      { time: '19:30', name: 'Static ECP 1/2 Day', patrol: false },
+    ];
 
-const PERSONNEL = [
-  { name:'Hashim Shakir',   color:'#6366f1', initials:'HS' },
-  { name:'Laith Mohammed',  color:'#0891b2', initials:'LM' },
-  { name:'Lucian Moldovan', color:'#059669', initials:'LMo' },
-  { name:'Gabriel Samoila', color:'#dc2626', initials:'GS' },
-  { name:'Security Manager',color:'#b45309', initials:'SM' },
-  { name:'Supervisor',      color:'#7c3aed', initials:'SUP' },
-];
+    const NIGHT_SLOTS = [
+      { time: '20:00', name: 'Laith Mohammed', patrol: true },
+      { time: '20:30', name: 'Static ECP 1/2 Night', patrol: false },
+      { time: '21:00', name: 'Gabriel Samoila', patrol: true },
+      { time: '21:30', name: 'Static ECP 1/2 Night', patrol: false },
+      { time: '22:00', name: 'Laith Mohammed', patrol: true },
+      { time: '22:30', name: 'Static ECP 1/2 Night', patrol: false },
+      { time: '23:00', name: 'Gabriel Samoila', patrol: true },
+      { time: '23:30', name: 'Static ECP 1/2 Night', patrol: false },
+      { time: '00:00', name: 'Laith Mohammed', patrol: true },
+      { time: '00:30', name: 'Static ECP 1/2 Night', patrol: false },
+      { time: '01:00', name: 'Gabriel Samoila', patrol: true },
+      { time: '01:30', name: 'Static ECP 1/2 Night', patrol: false },
+      { time: '02:00', name: 'Laith Mohammed', patrol: true },
+      { time: '02:30', name: 'Static ECP 1/2 Night', patrol: false },
+      { time: '03:00', name: 'Gabriel Samoila', patrol: true },
+      { time: '03:30', name: 'Static ECP 1/2 Night', patrol: false },
+      { time: '04:00', name: 'Laith Mohammed', patrol: true },
+      { time: '04:30', name: 'Static ECP 1/2 Night', patrol: false },
+      { time: '05:00', name: 'Gabriel Samoila', patrol: true },
+      { time: '05:30', name: 'Static ECP 1/2 Night', patrol: false },
+      { time: '06:00', name: 'Laith Mohammed', patrol: true },
+      { time: '06:30', name: 'Static ECP 1/2 Night', patrol: false },
+      { time: '07:00', name: 'Gabriel Samoila', patrol: true },
+      { time: '07:30', name: 'Static ECP 1/2 Night', patrol: false },
+    ];
 
-// ─────────────────────────────────────────────
-//  STATE
-// ─────────────────────────────────────────────
-const STORAGE_KEY = 'patrol_v2_march2026';
+    const PERSONNEL = [
+      { name: 'Hashim Shakir', color: '#6366f1', initials: 'HS' },
+      { name: 'Laith Mohammed', color: '#0891b2', initials: 'LM' },
+      { name: 'Lucian Moldovan', color: '#059669', initials: 'LMo' },
+      { name: 'Gabriel Samoila', color: '#dc2626', initials: 'GS' },
+      { name: 'Security Manager', color: '#b45309', initials: 'SM' },
+      { name: 'Supervisor', color: '#7c3aed', initials: 'SUP' },
+    ];
 
-// ── Storage: try localStorage → sessionStorage → in-memory ──
-const _mem = {};
-const _store = (() => {
-  const test = '__sp_test__';
-  for (const s of [window.localStorage, window.sessionStorage]) {
-    try { s.setItem(test,'1'); s.removeItem(test); return s; } catch(e){}
-  }
-  return { getItem: k => _mem[k]||null, setItem: (k,v) => { _mem[k]=v; }, removeItem: k => { delete _mem[k]; } };
-})();
+    // ─────────────────────────────────────────────
+    //  STATE
+    // ─────────────────────────────────────────────
+    const STORAGE_KEY = 'patrol_v2_march2026';
 
-let state = {
-  user: null,
-  dateIdx: 0,
-  shift: 'DAY',
-  data: {},
-  logFilter: 'all',
-  pending: null,
-};
+    // ── Local cache: try localStorage → sessionStorage → in-memory ──
+    const _mem = {};
+    const _store = (() => {
+      const test = '__sp_test__';
+      for (const s of [window.localStorage, window.sessionStorage]) {
+        try { s.setItem(test, '1'); s.removeItem(test); return s; } catch (e) { }
+      }
+      return { getItem: k => _mem[k] || null, setItem: (k, v) => { _mem[k] = v; }, removeItem: k => { delete _mem[k]; } };
+    })();
 
-function loadData() {
-  try { const d = _store.getItem(STORAGE_KEY); if (d) state.data = JSON.parse(d); } catch(e){}
-}
-function saveData() {
-  try { _store.setItem(STORAGE_KEY, JSON.stringify(state.data)); } catch(e){}
-}
-function slotKey(shift, time) { return `${shift}_${time}`; }
-function getEntry(dateKey, sk) { return (state.data[dateKey] || {})[sk] || null; }
+    // ── Sync badge helper ──
+    function setSyncBadge(status) {
+      const b = document.getElementById('sync-badge');
+      if (!b) return;
+      if (status === 'live')    { b.textContent = '● LIVE';    b.className = 'hdr-badge live'; }
+      if (status === 'offline') { b.textContent = '● OFFLINE'; b.className = 'hdr-badge offline'; }
+      if (status === 'sync')    { b.textContent = '↻ SYNCING'; b.className = 'hdr-badge offline'; }
+    }
 
-// ─────────────────────────────────────────────
-//  LOGIN
-// ─────────────────────────────────────────────
-function renderLogin() {
-  const el = document.getElementById('login-list');
-  el.innerHTML = PERSONNEL.map(p => `
+    // ── Cloud save (PUT to JSONBin) ──
+    async function saveCloudData() {
+      if (!JSONBIN_BIN_ID || JSONBIN_BIN_ID === 'YOUR_BIN_ID_HERE') return; // not configured
+      try {
+        setSyncBadge('sync');
+        const res = await fetch(JSONBIN_URL, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json', 'X-Master-Key': JSONBIN_API_KEY },
+          body: JSON.stringify(state.data)
+        });
+        if (!res.ok) throw new Error('PUT failed ' + res.status);
+        setSyncBadge('live');
+      } catch (err) {
+        console.warn('Cloud save failed:', err);
+        setSyncBadge('offline');
+      }
+    }
+
+    // ── Cloud load (GET from JSONBin) ──
+    async function loadCloudData(quiet = false) {
+      if (!JSONBIN_BIN_ID || JSONBIN_BIN_ID === 'YOUR_BIN_ID_HERE') {
+        setSyncBadge('offline');
+        return false;
+      }
+      try {
+        if (!quiet) setSyncBadge('sync');
+        const res = await fetch(JSONBIN_URL + '/latest', {
+          headers: { 'X-Master-Key': JSONBIN_API_KEY }
+        });
+        if (!res.ok) throw new Error('GET failed ' + res.status);
+        const json = await res.json();
+        const cloudData = json.record || {};
+        // Merge: cloud wins for any slot already set; local wins for new entries not yet pushed
+        for (const [dk, slots] of Object.entries(cloudData)) {
+          if (!state.data[dk]) state.data[dk] = {};
+          Object.assign(state.data[dk], slots);
+        }
+        // Also pick up any local-only keys not yet in cloud
+        _store.setItem(STORAGE_KEY, JSON.stringify(state.data));
+        setSyncBadge('live');
+        return true;
+      } catch (err) {
+        console.warn('Cloud load failed:', err);
+        setSyncBadge('offline');
+        return false;
+      }
+    }
+
+    let state = {
+      user: null,
+      dateIdx: 0,
+      shift: 'DAY',
+      data: {},
+      logFilter: 'all',
+      pending: null,
+    };
+
+    function loadData() {
+      // Load from local cache first (instant), then sync from cloud
+      try { const d = _store.getItem(STORAGE_KEY); if (d) state.data = JSON.parse(d); } catch (e) { }
+    }
+    function saveData() {
+      // Save to local cache immediately, then push to cloud
+      try { _store.setItem(STORAGE_KEY, JSON.stringify(state.data)); } catch (e) { }
+      saveCloudData(); // async, non-blocking
+    }
+    function slotKey(shift, time) { return `${shift}_${time}`; }
+    function getEntry(dateKey, sk) { return (state.data[dateKey] || {})[sk] || null; }
+
+    // ─────────────────────────────────────────────
+    //  LOGIN
+    // ─────────────────────────────────────────────
+    function renderLogin() {
+      const el = document.getElementById('login-list');
+      el.innerHTML = PERSONNEL.map(p => `
     <button class="login-btn" onclick="login('${p.name}')">
       <div class="avatar" style="background:${p.color}22;color:${p.color}">${p.initials}</div>
       ${p.name}
     </button>`).join('');
-}
-function login(name) {
-  state.user = name;
-  document.getElementById('login-screen').style.display = 'none';
-  document.getElementById('app').style.display = 'flex';
-  document.getElementById('user-label').textContent = name;
-  renderDateTabs();
-  renderGrid();
-  renderShiftStats();
-}
-function logout() {
-  state.user = null;
-  document.getElementById('app').style.display = 'none';
-  document.getElementById('login-screen').style.display = 'flex';
-}
+    }
+    function login(name) {
+      state.user = name;
+      document.getElementById('login-screen').style.display = 'none';
+      document.getElementById('app').style.display = 'flex';
+      document.getElementById('user-label').textContent = name;
+      renderDateTabs();
+      renderGrid();
+      renderShiftStats();
+    }
+    function logout() {
+      state.user = null;
+      document.getElementById('app').style.display = 'none';
+      document.getElementById('login-screen').style.display = 'flex';
+    }
 
-// ─────────────────────────────────────────────
-//  TABS & SHIFT
-// ─────────────────────────────────────────────
-function setTab(id, btn) {
-  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-  ['dashboard','log','stats','backup'].forEach(t => {
-    document.getElementById('tab-'+t).style.display = (t===id) ? '' : 'none';
-  });
-  if (id==='log')   renderLog();
-  if (id==='stats') renderStats();
-}
-function setShift(s, btn) {
-  state.shift = s;
-  document.querySelectorAll('.shift-btn').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-  renderGrid();
-  renderShiftStats();
-}
+    // ─────────────────────────────────────────────
+    //  TABS & SHIFT
+    // ─────────────────────────────────────────────
+    function setTab(id, btn) {
+      document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      ['dashboard', 'log', 'stats', 'backup'].forEach(t => {
+        document.getElementById('tab-' + t).style.display = (t === id) ? '' : 'none';
+      });
+      if (id === 'log') renderLog();
+      if (id === 'stats') renderStats();
+    }
+    function setShift(s, btn) {
+      state.shift = s;
+      document.querySelectorAll('.shift-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      renderGrid();
+      renderShiftStats();
+    }
 
-// ─────────────────────────────────────────────
-//  DATE TABS
-// ─────────────────────────────────────────────
-function renderDateTabs() {
-  const el = document.getElementById('date-tabs');
-  el.innerHTML = DATES.map((d,i) => {
-    const dayData = state.data[d.key] || {};
-    const hasIssue = Object.values(dayData).some(e => e.status==='red');
-    const allOk    = Object.values(dayData).some(e => e.status==='green') && !hasIssue;
-    return `<div class="date-tab ${i===state.dateIdx?'active':''}" onclick="setDate(${i})">
+    // ─────────────────────────────────────────────
+    //  DATE TABS
+    // ─────────────────────────────────────────────
+    function renderDateTabs() {
+      const el = document.getElementById('date-tabs');
+      el.innerHTML = DATES.map((d, i) => {
+        const dayData = state.data[d.key] || {};
+        const hasIssue = Object.values(dayData).some(e => e.status === 'red');
+        const allOk = Object.values(dayData).some(e => e.status === 'green') && !hasIssue;
+        return `<div class="date-tab ${i === state.dateIdx ? 'active' : ''}" onclick="setDate(${i})">
       ${d.label}
-      <span class="dot ${hasIssue?'show':''} ${allOk?'g-dot':''}"></span>
+      <span class="dot ${hasIssue ? 'show' : ''} ${allOk ? 'g-dot' : ''}"></span>
     </div>`;
-  }).join('');
-}
-function setDate(i) {
-  state.dateIdx = i;
-  renderDateTabs();
-  renderGrid();
-  renderShiftStats();
-}
+      }).join('');
+    }
+    function setDate(i) {
+      state.dateIdx = i;
+      renderDateTabs();
+      renderGrid();
+      renderShiftStats();
+    }
 
-// ─────────────────────────────────────────────
-//  SHIFT STATS STRIP
-// ─────────────────────────────────────────────
-function renderShiftStats() {
-  const dk = DATES[state.dateIdx].key;
-  const slots = state.shift==='DAY' ? DAY_SLOTS : NIGHT_SLOTS;
-  const patrol = slots.filter(s=>s.patrol);
-  let ok=0,iss=0;
-  patrol.forEach(s => {
-    const e = getEntry(dk, slotKey(state.shift, s.time));
-    if (e?.status==='green') ok++;
-    else if (e?.status==='red') iss++;
-  });
-  const pend = patrol.length - ok - iss;
-  document.getElementById('shift-stats').innerHTML = `
+    // ─────────────────────────────────────────────
+    //  SHIFT STATS STRIP
+    // ─────────────────────────────────────────────
+    function renderShiftStats() {
+      const dk = DATES[state.dateIdx].key;
+      const slots = state.shift === 'DAY' ? DAY_SLOTS : NIGHT_SLOTS;
+      const patrol = slots.filter(s => s.patrol);
+      let ok = 0, iss = 0;
+      patrol.forEach(s => {
+        const e = getEntry(dk, slotKey(state.shift, s.time));
+        if (e?.status === 'green') ok++;
+        else if (e?.status === 'red') iss++;
+      });
+      const pend = patrol.length - ok - iss;
+      document.getElementById('shift-stats').innerHTML = `
     <div class="stat-pill"><div class="stat-dot" style="background:var(--green)"></div>${ok} confirmed</div>
-    <div class="stat-pill"><div class="stat-dot" style="background:var(--red)"></div>${iss} issue${iss!==1?'s':''}</div>
+    <div class="stat-pill"><div class="stat-dot" style="background:var(--red)"></div>${iss} issue${iss !== 1 ? 's' : ''}</div>
     <div class="stat-pill"><div class="stat-dot" style="background:var(--muted)"></div>${pend} pending</div>`;
-}
+    }
 
-// ─────────────────────────────────────────────
-//  MAIN GRID
-// ─────────────────────────────────────────────
-function renderGrid() {
-  const dk = DATES[state.dateIdx].key;
-  const slots = state.shift==='DAY' ? DAY_SLOTS : NIGHT_SLOTS;
-  const el = document.getElementById('slots-grid');
-  el.innerHTML = slots.map(s => {
-    const sk = slotKey(state.shift, s.time);
-    const e  = getEntry(dk, sk);
-    const cls = e ? (e.status==='green'?'confirmed':'issue') : '';
-    return `<div class="slot-card ${s.patrol?'':'static-card'} ${cls}" id="card-${sk}">
+    // ─────────────────────────────────────────────
+    //  MAIN GRID
+    // ─────────────────────────────────────────────
+    function renderGrid() {
+      const dk = DATES[state.dateIdx].key;
+      const slots = state.shift === 'DAY' ? DAY_SLOTS : NIGHT_SLOTS;
+      const el = document.getElementById('slots-grid');
+      el.innerHTML = slots.map(s => {
+        const sk = slotKey(state.shift, s.time);
+        const e = getEntry(dk, sk);
+        const cls = e ? (e.status === 'green' ? 'confirmed' : 'issue') : '';
+        return `<div class="slot-card ${s.patrol ? '' : 'static-card'} ${cls}" id="card-${sk}">
       <div class="slot-time">${s.time}</div>
-      <div class="slot-name ${s.patrol?'patrol':''}">${s.name}</div>
+      <div class="slot-name ${s.patrol ? 'patrol' : ''}">${s.name}</div>
       ${e ? `
-        <div class="slot-badge ${e.status==='green'?'confirmed':'issue'}">
-          ${e.status==='green'?'✓ OK':'⚠ Issue'}
+        <div class="slot-badge ${e.status === 'green' ? 'confirmed' : 'issue'}">
+          ${e.status === 'green' ? '✓ OK' : '⚠ Issue'}
         </div>
         <div class="slot-who">by ${e.user} · ${fmtTs(e.ts)}</div>
         ${e.comment ? `<div class="slot-comment">"${e.comment}"</div>` : ''}
@@ -602,104 +1343,104 @@ function renderGrid() {
           <button class="slot-btn issue" onclick="openModal('${dk}','${sk}','${s.time}','${s.name}','red')">⚠ Issue</button>
         </div>` : ''}
     </div>`;
-  }).join('');
-}
-
-// ─────────────────────────────────────────────
-//  MODAL
-// ─────────────────────────────────────────────
-function openModal(dk, sk, time, name, status) {
-  state.pending = { dk, sk, time, name, status };
-  const now = new Date();
-  document.getElementById('modal-title').textContent   = status==='green' ? '✅ Confirm Patrol Completion' : '⚠️ Report an Issue';
-  document.getElementById('modal-sub').textContent     = `${DATES[state.dateIdx].label} · ${time} · ${name}`;
-  document.getElementById('modal-user').textContent    = state.user;
-  document.getElementById('modal-ts').textContent      = now.toLocaleString('en-GB',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit',second:'2-digit'});
-  document.getElementById('modal-comment').value       = '';
-  const btn = document.getElementById('modal-confirm-btn');
-  btn.className = 'modal-confirm ' + (status==='green'?'ok':'issue');
-  btn.textContent = status==='green' ? 'Confirm Completed' : 'Submit Issue';
-  document.getElementById('modal-bg').classList.add('open');
-}
-function closeModal() { document.getElementById('modal-bg').classList.remove('open'); state.pending=null; }
-
-function submitConfirmation() {
-  const {dk, sk, status} = state.pending;
-  const comment = document.getElementById('modal-comment').value.trim();
-  if (!state.data[dk]) state.data[dk] = {};
-  state.data[dk][sk] = { status, user: state.user, ts: new Date().toISOString(), comment };
-  saveData();
-  closeModal();
-  renderDateTabs();
-  renderGrid();
-  renderShiftStats();
-}
-
-// click outside to close
-document.getElementById('modal-bg').addEventListener('click', function(e){
-  if (e.target===this) closeModal();
-});
-
-// ─────────────────────────────────────────────
-//  LOG TAB
-// ─────────────────────────────────────────────
-let _logFilter = 'all';
-function setLogFilter(f, btn) {
-  _logFilter = f;
-  document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
-  btn.classList.add('active');
-  renderLog();
-}
-function renderLog() {
-  const logs = [];
-  for (const [dk, slots] of Object.entries(state.data)) {
-    const dateLabel = DATES.find(d=>d.key===dk)?.label || dk;
-    for (const [sk, e] of Object.entries(slots)) {
-      logs.push({dk, dateLabel, sk, ...e});
+      }).join('');
     }
-  }
-  logs.sort((a,b) => new Date(b.ts)-new Date(a.ts));
-  const filtered = _logFilter==='all' ? logs : logs.filter(l=>l.status===_logFilter);
-  const el = document.getElementById('log-list');
-  if (!filtered.length) { el.innerHTML=`<div class="empty"><div class="empty-icon">📋</div>No entries yet.</div>`; return; }
-  el.innerHTML = filtered.map(l => `
+
+    // ─────────────────────────────────────────────
+    //  MODAL
+    // ─────────────────────────────────────────────
+    function openModal(dk, sk, time, name, status) {
+      state.pending = { dk, sk, time, name, status };
+      const now = new Date();
+      document.getElementById('modal-title').textContent = status === 'green' ? '✅ Confirm Patrol Completion' : '⚠️ Report an Issue';
+      document.getElementById('modal-sub').textContent = `${DATES[state.dateIdx].label} · ${time} · ${name}`;
+      document.getElementById('modal-user').textContent = state.user;
+      document.getElementById('modal-ts').textContent = now.toLocaleString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' });
+      document.getElementById('modal-comment').value = '';
+      const btn = document.getElementById('modal-confirm-btn');
+      btn.className = 'modal-confirm ' + (status === 'green' ? 'ok' : 'issue');
+      btn.textContent = status === 'green' ? 'Confirm Completed' : 'Submit Issue';
+      document.getElementById('modal-bg').classList.add('open');
+    }
+    function closeModal() { document.getElementById('modal-bg').classList.remove('open'); state.pending = null; }
+
+    function submitConfirmation() {
+      const { dk, sk, status } = state.pending;
+      const comment = document.getElementById('modal-comment').value.trim();
+      if (!state.data[dk]) state.data[dk] = {};
+      state.data[dk][sk] = { status, user: state.user, ts: new Date().toISOString(), comment };
+      saveData();
+      closeModal();
+      renderDateTabs();
+      renderGrid();
+      renderShiftStats();
+    }
+
+    // click outside to close
+    document.getElementById('modal-bg').addEventListener('click', function (e) {
+      if (e.target === this) closeModal();
+    });
+
+    // ─────────────────────────────────────────────
+    //  LOG TAB
+    // ─────────────────────────────────────────────
+    let _logFilter = 'all';
+    function setLogFilter(f, btn) {
+      _logFilter = f;
+      document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      renderLog();
+    }
+    function renderLog() {
+      const logs = [];
+      for (const [dk, slots] of Object.entries(state.data)) {
+        const dateLabel = DATES.find(d => d.key === dk)?.label || dk;
+        for (const [sk, e] of Object.entries(slots)) {
+          logs.push({ dk, dateLabel, sk, ...e });
+        }
+      }
+      logs.sort((a, b) => new Date(b.ts) - new Date(a.ts));
+      const filtered = _logFilter === 'all' ? logs : logs.filter(l => l.status === _logFilter);
+      const el = document.getElementById('log-list');
+      if (!filtered.length) { el.innerHTML = `<div class="empty"><div class="empty-icon">📋</div>No entries yet.</div>`; return; }
+      el.innerHTML = filtered.map(l => `
     <div class="log-entry">
-      <div class="log-dot" style="background:${l.status==='green'?'var(--green)':'var(--red)'}"></div>
+      <div class="log-dot" style="background:${l.status === 'green' ? 'var(--green)' : 'var(--red)'}"></div>
       <div class="log-main">
-        <div class="log-head">${l.dateLabel} · ${l.sk.replace('_',' · ')}</div>
+        <div class="log-head">${l.dateLabel} · ${l.sk.replace('_', ' · ')}</div>
         <div class="log-meta">By ${l.user} · ${fmtTsLong(l.ts)}</div>
-        ${l.comment?`<div class="log-cmt">"${l.comment}"</div>`:''}
+        ${l.comment ? `<div class="log-cmt">"${l.comment}"</div>` : ''}
       </div>
-      <div class="log-status" style="color:${l.status==='green'?'var(--green)':'var(--red)'}">
-        ${l.status==='green'?'CONFIRMED':'ISSUE'}
+      <div class="log-status" style="color:${l.status === 'green' ? 'var(--green)' : 'var(--red)'}">
+        ${l.status === 'green' ? 'CONFIRMED' : 'ISSUE'}
       </div>
     </div>`).join('');
-}
-
-// ─────────────────────────────────────────────
-//  STATS TAB
-// ─────────────────────────────────────────────
-function renderStats() {
-  const totalPerShift = DAY_SLOTS.filter(s=>s.patrol).length;
-  const totalNight    = NIGHT_SLOTS.filter(s=>s.patrol).length;
-  const total = totalPerShift + totalNight;
-
-  let globalOk=0, globalIss=0, globalPend=0;
-
-  const el = document.getElementById('stats-grid');
-  el.innerHTML = DATES.map(d => {
-    const dd = state.data[d.key] || {};
-    let ok=0, iss=0;
-    for (const e of Object.values(dd)) {
-      if (e.status==='green') ok++;
-      else if (e.status==='red') iss++;
     }
-    const pend = total - ok - iss < 0 ? 0 : total - ok - iss;
-    globalOk+=ok; globalIss+=iss; globalPend+=pend;
-    const done = ok+iss;
-    const pct = Math.round((done/total)*100);
-    const barColor = iss>0 ? '#f59e0b' : '#22c55e';
-    return `<div class="stat-card">
+
+    // ─────────────────────────────────────────────
+    //  STATS TAB
+    // ─────────────────────────────────────────────
+    function renderStats() {
+      const totalPerShift = DAY_SLOTS.filter(s => s.patrol).length;
+      const totalNight = NIGHT_SLOTS.filter(s => s.patrol).length;
+      const total = totalPerShift + totalNight;
+
+      let globalOk = 0, globalIss = 0, globalPend = 0;
+
+      const el = document.getElementById('stats-grid');
+      el.innerHTML = DATES.map(d => {
+        const dd = state.data[d.key] || {};
+        let ok = 0, iss = 0;
+        for (const e of Object.values(dd)) {
+          if (e.status === 'green') ok++;
+          else if (e.status === 'red') iss++;
+        }
+        const pend = total - ok - iss < 0 ? 0 : total - ok - iss;
+        globalOk += ok; globalIss += iss; globalPend += pend;
+        const done = ok + iss;
+        const pct = Math.round((done / total) * 100);
+        const barColor = iss > 0 ? '#f59e0b' : '#22c55e';
+        return `<div class="stat-card">
       <div class="stat-date">${d.label}</div>
       <div class="stat-row"><span style="color:var(--green)">✓ Confirmed</span><span>${ok}</span></div>
       <div class="stat-row"><span style="color:var(--red)">⚠ Issues</span><span>${iss}</span></div>
@@ -707,9 +1448,9 @@ function renderStats() {
       <div class="stat-bar-bg"><div class="stat-bar" style="width:${pct}%;background:${barColor}"></div></div>
       <div class="stat-pct">${pct}% actioned</div>
     </div>`;
-  }).join('');
+      }).join('');
 
-  document.getElementById('weekly-summary').innerHTML = `
+      document.getElementById('weekly-summary').innerHTML = `
     <div style="background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:1.1rem 1.25rem;display:flex;gap:2rem;flex-wrap:wrap;">
       <div>
         <div style="font-size:.72rem;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:.2rem">Weekly total</div>
@@ -729,100 +1470,129 @@ function renderStats() {
         <div style="font-size:1.4rem;font-weight:600;color:var(--muted);font-family:var(--mono)">${globalPend}</div>
       </div>
     </div>`;
-}
-
-// ─────────────────────────────────────────────
-//  CSV EXPORT
-// ─────────────────────────────────────────────
-function exportCSV() {
-  const rows = [['Date','Shift','Time','Assignee','Status','Confirmed By','Timestamp','Comment']];
-  for (const d of DATES) {
-    const dd = state.data[d.key] || {};
-    for (const shift of ['DAY','NIGHT']) {
-      const slots = shift==='DAY' ? DAY_SLOTS : NIGHT_SLOTS;
-      for (const s of slots) {
-        const sk = slotKey(shift, s.time);
-        const e  = dd[sk];
-        rows.push([
-          d.label, shift, s.time, s.name,
-          e ? e.status.toUpperCase() : 'PENDING',
-          e ? e.user : '',
-          e ? fmtTsLong(e.ts) : '',
-          e ? (e.comment||'') : ''
-        ]);
-      }
     }
-  }
-  const csv = rows.map(r => r.map(c => `"${String(c).replace(/"/g,'""')}"`).join(',')).join('\n');
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(new Blob([csv],{type:'text/csv'}));
-  a.download = 'patrol_log_march2026.csv';
-  a.click();
-}
 
-// ─────────────────────────────────────────────
-//  BACKUP / RESTORE / CLEAR
-// ─────────────────────────────────────────────
-function saveBackup() {
-  const payload = { version: 2, exported: new Date().toISOString(), data: state.data };
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(new Blob([JSON.stringify(payload,null,2)],{type:'application/json'}));
-  a.download = `patrol_backup_${new Date().toISOString().slice(0,10)}.json`;
-  a.click();
-}
-function loadBackup(input) {
-  const file = input.files[0]; if (!file) return;
-  const reader = new FileReader();
-  reader.onload = e => {
-    try {
-      const payload = JSON.parse(e.target.result);
-      state.data = payload.data || payload; // support both versioned and raw
+    // ─────────────────────────────────────────────
+    //  CSV EXPORT
+    // ─────────────────────────────────────────────
+    function exportCSV() {
+      const rows = [['Date', 'Shift', 'Time', 'Assignee', 'Status', 'Confirmed By', 'Timestamp', 'Comment']];
+      for (const d of DATES) {
+        const dd = state.data[d.key] || {};
+        for (const shift of ['DAY', 'NIGHT']) {
+          const slots = shift === 'DAY' ? DAY_SLOTS : NIGHT_SLOTS;
+          for (const s of slots) {
+            const sk = slotKey(shift, s.time);
+            const e = dd[sk];
+            rows.push([
+              d.label, shift, s.time, s.name,
+              e ? e.status.toUpperCase() : 'PENDING',
+              e ? e.user : '',
+              e ? fmtTsLong(e.ts) : '',
+              e ? (e.comment || '') : ''
+            ]);
+          }
+        }
+      }
+      const csv = rows.map(r => r.map(c => `"${String(c).replace(/"/g, '""')}"`).join(',')).join('\n');
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv' }));
+      a.download = 'patrol_log_march2026.csv';
+      a.click();
+    }
+
+    // ─────────────────────────────────────────────
+    //  BACKUP / RESTORE / CLEAR
+    // ─────────────────────────────────────────────
+    function saveBackup() {
+      const payload = { version: 2, exported: new Date().toISOString(), data: state.data };
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' }));
+      a.download = `patrol_backup_${new Date().toISOString().slice(0, 10)}.json`;
+      a.click();
+    }
+    function loadBackup(input) {
+      const file = input.files[0]; if (!file) return;
+      const reader = new FileReader();
+      reader.onload = e => {
+        try {
+          const payload = JSON.parse(e.target.result);
+          state.data = payload.data || payload; // support both versioned and raw
+          saveData();
+          renderDateTabs(); renderGrid(); renderShiftStats();
+          const st = document.getElementById('backup-status');
+          st.style.display = 'block';
+          st.textContent = `✓ Backup loaded successfully (${Object.keys(state.data).length} day(s) of data restored).`;
+        } catch (err) {
+          alert('Invalid backup file. Please select a valid patrol backup JSON.');
+        }
+        input.value = '';
+      };
+      reader.readAsText(file);
+    }
+    function clearAll() {
+      if (!confirm('Clear ALL confirmation data from this session? This cannot be undone.')) return;
+      state.data = {};
       saveData();
       renderDateTabs(); renderGrid(); renderShiftStats();
       const st = document.getElementById('backup-status');
       st.style.display = 'block';
-      st.textContent = `✓ Backup loaded successfully (${Object.keys(state.data).length} day(s) of data restored).`;
-    } catch(err) {
-      alert('Invalid backup file. Please select a valid patrol backup JSON.');
+      st.style.color = 'var(--red)';
+      st.textContent = 'Session data cleared.';
     }
-    input.value = '';
-  };
-  reader.readAsText(file);
-}
-function clearAll() {
-  if (!confirm('Clear ALL confirmation data from this session? This cannot be undone.')) return;
-  state.data = {};
-  saveData();
-  renderDateTabs(); renderGrid(); renderShiftStats();
-  const st = document.getElementById('backup-status');
-  st.style.display = 'block';
-  st.style.color = 'var(--red)';
-  st.textContent = 'Session data cleared.';
-}
 
-// ─────────────────────────────────────────────
-//  HELPERS
-// ─────────────────────────────────────────────
-function fmtTs(iso) {
-  const d = new Date(iso);
-  return d.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});
-}
-function fmtTsLong(iso) {
-  const d = new Date(iso);
-  return d.toLocaleString('en-GB',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'});
-}
+    // ─────────────────────────────────────────────
+    //  HELPERS
+    // ─────────────────────────────────────────────
+    function fmtTs(iso) {
+      const d = new Date(iso);
+      return d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+    }
+    function fmtTsLong(iso) {
+      const d = new Date(iso);
+      return d.toLocaleString('en-GB', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' });
+    }
 
-// ─────────────────────────────────────────────
-//  INIT
-// ─────────────────────────────────────────────
-loadData();
-renderLogin();
+    // ─────────────────────────────────────────────
+    //  INIT
+    // ─────────────────────────────────────────────
+    loadData();
+    renderLogin();
 
-// Auto-select current date (March 24-31)
-const today = new Date();
-const todayKey = today.toISOString().slice(0,10);
-const idx = DATES.findIndex(d=>d.key===todayKey);
-if (idx>=0) state.dateIdx = idx;
-</script>
+    // Auto-select current date (March 24-31)
+    const today = new Date();
+    const todayKey = today.toISOString().slice(0, 10);
+    const idx = DATES.findIndex(d => d.key === todayKey);
+    if (idx >= 0) state.dateIdx = idx;
+
+    // ── Initial cloud sync ──
+    setSyncBadge('sync');
+    loadCloudData().then(ok => {
+      if (ok) {
+        renderDateTabs();
+        renderGrid();
+        renderShiftStats();
+      }
+    });
+
+    // ── Polling: refresh from cloud every 60s ──
+    setInterval(async () => {
+      const prevData = JSON.stringify(state.data);
+      const ok = await loadCloudData(true);
+      if (ok && JSON.stringify(state.data) !== prevData) {
+        // Data changed remotely — refresh visible tabs
+        renderDateTabs();
+        renderGrid();
+        renderShiftStats();
+        const activeTab = document.querySelector('.nav-btn.active');
+        if (activeTab) {
+          const tabId = activeTab.getAttribute('onclick').match(/'(\w+)'/)?.[1];
+          if (tabId === 'log')   renderLog();
+          if (tabId === 'stats') renderStats();
+        }
+      }
+    }, POLL_INTERVAL_MS);
+  </script>
 </body>
+
 </html>
