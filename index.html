@@ -161,9 +161,10 @@
       align-items: center;
       gap: 10px;
     }
-
     .hdr-logo {
       font-size: 1.2rem;
+      cursor: pointer;
+      user-select: none;
     }
 
     .hdr-title {
@@ -182,11 +183,13 @@
       padding: 2px 7px;
       transition: color .3s, background .3s, border-color .3s;
     }
+
     .hdr-badge.live {
       color: var(--green);
       background: rgba(34, 197, 94, .1);
       border-color: rgba(34, 197, 94, .3);
     }
+
     .hdr-badge.offline {
       color: var(--amber);
       background: rgba(245, 158, 11, .1);
@@ -421,14 +424,34 @@
       opacity: .65;
     }
 
-    .slot-card.confirmed {
-      background: rgba(34, 197, 94, .06);
-      border-color: rgba(34, 197, 94, .35);
+    .bk-btn.red {
+      color: #fee2e2;
+      background: rgba(239, 68, 68, .1);
+      border-color: rgba(239, 68, 68, .2);
     }
 
-    .slot-card.issue {
-      background: rgba(239, 68, 68, .07);
-      border-color: rgba(239, 68, 68, .35);
+    .bk-btn.red:hover {
+      background: rgba(239, 68, 68, .15);
+      border-color: rgba(239, 68, 68, .3);
+    }
+
+    /* settings modal */
+    .settings-input {
+      background: rgba(0, 0, 0, 0.2);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 8px 10px;
+      color: var(--dim);
+      font-family: var(--mono);
+      font-size: 0.8rem;
+      width: 100%;
+      margin-bottom: 12px;
+      box-sizing: border-box;
+    }
+
+    .settings-input:focus {
+      outline: none;
+      border-color: var(--amber);
     }
 
     .slot-time {
@@ -923,9 +946,10 @@
   <div id="app">
     <header class="hdr">
       <div class="hdr-left">
-        <img
+        <img id="app-logo" title="Triple-tap for settings"
           src="data:image/png;base64,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"
-          alt="SICIM" style="height:28px;width:auto;display:block;filter:invert(1) grayscale(1);mix-blend-mode:screen">
+          alt="SICIM"
+          style="height:28px;width:auto;display:block;filter:invert(1) grayscale(1);mix-blend-mode:screen;cursor:pointer;">
         <span class="hdr-title">SICIM TCF Patrol Confirmation System</span>
         <span class="hdr-badge" id="sync-badge">● LIVE</span>
       </div>
@@ -1028,6 +1052,26 @@
     </div>
   </div>
 
+  <!-- SETTINGS MODAL -->
+  <div class="modal-bg" id="settings-modal" style="z-index:9999">
+    <div class="modal">
+      <div class="modal-title">Cloud Sync Settings</div>
+      <div class="modal-sub">Configure your JSONBin.io credentials</div>
+
+      <span class="field-label">JSONBin Bin ID</span>
+      <input type="text" id="setting-bin-id" class="settings-input" placeholder="e.g. 6642a1f7acd3cb34a838...">
+
+      <span class="field-label">JSONBin API Key</span>
+      <input type="text" id="setting-api-key" class="settings-input" placeholder="e.g. $2a$10$...">
+
+      <div class="modal-btns" style="margin-top: 20px;">
+        <button class="modal-cancel"
+          onclick="document.getElementById('settings-modal').style.display='none'">Cancel</button>
+        <button class="modal-confirm" onclick="saveSettings()">Save Configuration</button>
+      </div>
+    </div>
+  </div>
+
   <!-- CONFIRMATION MODAL -->
   <div class="modal-bg" id="modal-bg">
     <div class="modal">
@@ -1051,12 +1095,13 @@
     //  CLOUD STORAGE CONFIG (JSONBin.io)
     //  1. Create a free account at https://jsonbin.io
     //  2. Create a Bin with content: {}
-    //  3. Paste your Bin ID and Master API Key below
+    //  3. Paste your Bin ID and Master API Key below (Or configure via the UI)
     // ─────────────────────────────────────────────
-    const JSONBIN_BIN_ID  = 'YOUR_BIN_ID_HERE';      // e.g. '6642a1f7acd3cb34a838...' 
-    const JSONBIN_API_KEY = 'YOUR_MASTER_KEY_HERE';   // e.g. '$2a$10$...'
-    const JSONBIN_URL     = `https://api.jsonbin.io/v3/b/${JSONBIN_BIN_ID}`;
+    let JSONBIN_BIN_ID = localStorage.getItem('sicim_jsonbin_id') || '69c12836c3097a1dd54fbae5';
+    let JSONBIN_API_KEY = localStorage.getItem('sicim_jsonbin_key') || '$2a$10$mr2nvnzVZBreQiZ3N0DGF.uePvPjNw2K1azq/PFay6W8lwQjt8Hmm';
+    let JSONBIN_URL = JSONBIN_BIN_ID ? `https://api.jsonbin.io/v3/b/${JSONBIN_BIN_ID}` : '';
     const POLL_INTERVAL_MS = 60000; // 60 seconds
+
 
     // ─────────────────────────────────────────────
     //  DATA
@@ -1154,9 +1199,9 @@
     function setSyncBadge(status) {
       const b = document.getElementById('sync-badge');
       if (!b) return;
-      if (status === 'live')    { b.textContent = '● LIVE';    b.className = 'hdr-badge live'; }
+      if (status === 'live') { b.textContent = '● LIVE'; b.className = 'hdr-badge live'; }
       if (status === 'offline') { b.textContent = '● OFFLINE'; b.className = 'hdr-badge offline'; }
-      if (status === 'sync')    { b.textContent = '↻ SYNCING'; b.className = 'hdr-badge offline'; }
+      if (status === 'sync') { b.textContent = '↻ SYNCING'; b.className = 'hdr-badge offline'; }
     }
 
     // ── Cloud save (PUT to JSONBin) ──
@@ -1587,7 +1632,7 @@
         const activeTab = document.querySelector('.nav-btn.active');
         if (activeTab) {
           const tabId = activeTab.getAttribute('onclick').match(/'(\w+)'/)?.[1];
-          if (tabId === 'log')   renderLog();
+          if (tabId === 'log') renderLog();
           if (tabId === 'stats') renderStats();
         }
       }
