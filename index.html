@@ -161,6 +161,7 @@
       align-items: center;
       gap: 10px;
     }
+
     .hdr-logo {
       font-size: 1.2rem;
       cursor: pointer;
@@ -1019,9 +1020,11 @@
     <div id="tab-backup" class="main" style="display:none">
       <div style="max-width:560px">
         <div class="backup-notice">
-          <div style="font-size:.85rem;font-weight:600;color:#22c55e;margin-bottom:.4rem">☁ Neon DB Cloud Storage Active</div>
+          <div style="font-size:.85rem;font-weight:600;color:#22c55e;margin-bottom:.4rem">☁ Neon DB Cloud Storage Active
+          </div>
           <div style="font-size:.78rem;color:var(--dim);line-height:1.6">
-            All confirmations are automatically saved to <strong>Neon PostgreSQL</strong> via Netlify Functions and visible to all users within
+            All confirmations are automatically saved to <strong>Neon PostgreSQL</strong> via Netlify Functions and
+            visible to all users within
             <strong>60 seconds</strong>. The sync badge in the header shows ● LIVE when connected.
             The backup tools below let you export a local snapshot or restore from a file if needed.
           </div>
@@ -1063,7 +1066,8 @@
         No client-side credentials are needed.
       </div>
       <div class="modal-btns" style="margin-top: 20px;">
-        <button class="modal-confirm" onclick="document.getElementById('settings-modal').classList.remove('open')">Close</button>
+        <button class="modal-confirm"
+          onclick="document.getElementById('settings-modal').classList.remove('open')">Close</button>
       </div>
     </div>
   </div>

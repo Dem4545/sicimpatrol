@@ -5,6 +5,8 @@ import { neon } from '@neondatabase/serverless';
 
 const CORS = {
   'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+  'Access-Control-Allow-Headers': 'Content-Type',
   'Content-Type': 'application/json',
 };
 
@@ -15,19 +17,6 @@ export const handler = async (event) => {
 
   try {
     const sql = neon(process.env.DATABASE_URL);
-
-    // Ensure table exists (idempotent)
-    await sql`
-      CREATE TABLE IF NOT EXISTS patrol_confirmations (
-        date_key       TEXT NOT NULL,
-        slot_key       TEXT NOT NULL,
-        status         TEXT NOT NULL,
-        user_name      TEXT NOT NULL,
-        confirmed_at   TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-        comment        TEXT DEFAULT '',
-        PRIMARY KEY (date_key, slot_key)
-      )
-    `;
 
     const rows = await sql`
       SELECT date_key, slot_key, status, user_name, confirmed_at, comment

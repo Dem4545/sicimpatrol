@@ -2,6 +2,7 @@
   "name": "patrol-functions",
   "version": "1.0.0",
   "dependencies": {
-    "@neondatabase/serverless": "^0.10.4"
+    "@neondatabase/serverless": "^0.10.4",
+    "dotenv": "^17.3.1"
   }
 }
