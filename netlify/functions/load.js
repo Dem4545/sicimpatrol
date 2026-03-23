@@ -1,23 +1,22 @@
 // netlify/functions/load.js
-// GET /api/load  →  returns all patrol confirmations as nested JSON:
-// { "2026-03-24": { "DAY_08:00": { status, user, ts, comment } }, ... }
+// GET /api/load  →  returns all patrol confirmations as nested JSON
 
-const { neon } = require('@neondatabase/serverless');
+import { neon } from '@neondatabase/serverless';
 
-exports.handler = async (event) => {
-  const headers = {
-    'Access-Control-Allow-Origin': '*',
-    'Content-Type': 'application/json',
-  };
+const CORS = {
+  'Access-Control-Allow-Origin': '*',
+  'Content-Type': 'application/json',
+};
 
+export const handler = async (event) => {
   if (event.httpMethod === 'OPTIONS') {
-    return { statusCode: 204, headers };
+    return { statusCode: 204, headers: CORS };
   }
 
   try {
     const sql = neon(process.env.DATABASE_URL);
 
-    // Ensure table exists
+    // Ensure table exists (idempotent)
     await sql`
       CREATE TABLE IF NOT EXISTS patrol_confirmations (
         date_key       TEXT NOT NULL,
@@ -30,9 +29,13 @@ exports.handler = async (event) => {
       )
     `;
 
-    const rows = await sql`SELECT * FROM patrol_confirmations ORDER BY date_key, slot_key`;
+    const rows = await sql`
+      SELECT date_key, slot_key, status, user_name, confirmed_at, comment
+      FROM patrol_confirmations
+      ORDER BY date_key, slot_key
+    `;
 
-    // Convert flat rows → nested { date_key: { slot_key: { status, user, ts, comment } } }
+    // Reshape flat rows → { date_key: { slot_key: { status, user, ts, comment } } }
     const result = {};
     for (const row of rows) {
       if (!result[row.date_key]) result[row.date_key] = {};
@@ -44,17 +47,9 @@ exports.handler = async (event) => {
       };
     }
 
-    return {
-      statusCode: 200,
-      headers,
-      body: JSON.stringify(result),
-    };
+    return { statusCode: 200, headers: CORS, body: JSON.stringify(result) };
   } catch (err) {
     console.error('load error:', err);
-    return {
-      statusCode: 500,
-      headers,
-      body: JSON.stringify({ error: err.message }),
-    };
+    return { statusCode: 500, headers: CORS, body: JSON.stringify({ error: err.message }) };
   }
 };
