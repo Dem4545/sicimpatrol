@@ -936,7 +936,7 @@
           style="height:56px;width:auto;display:block;margin:0 auto;filter:invert(1) grayscale(1);mix-blend-mode:screen">
       </div>
       <div class="login-title">TCF Patrol Confirmation System</div>
-      <div class="login-sub">SICIM · NBS (Night Bird Security) · March 24–31 2026</div>
+      <div class="login-sub">SICIM · NBS (Night Bird Security) · 24–31 March 2026</div>
       <span class="login-label">Select your identity to continue</span>
       <div id="login-list"></div>
     </div>
@@ -1019,9 +1019,9 @@
     <div id="tab-backup" class="main" style="display:none">
       <div style="max-width:560px">
         <div class="backup-notice">
-          <div style="font-size:.85rem;font-weight:600;color:#22c55e;margin-bottom:.4rem">☁ Cloud Storage Active</div>
+          <div style="font-size:.85rem;font-weight:600;color:#22c55e;margin-bottom:.4rem">☁ Neon DB Cloud Storage Active</div>
           <div style="font-size:.78rem;color:var(--dim);line-height:1.6">
-            All confirmations are automatically saved to the shared cloud database and are visible to all users within
+            All confirmations are automatically saved to <strong>Neon PostgreSQL</strong> via Netlify Functions and visible to all users within
             <strong>60 seconds</strong>. The sync badge in the header shows ● LIVE when connected.
             The backup tools below let you export a local snapshot or restore from a file if needed.
           </div>
@@ -1052,22 +1052,18 @@
     </div>
   </div>
 
-  <!-- SETTINGS MODAL -->
+  <!-- SETTINGS MODAL (info only — credentials are Netlify env vars) -->
   <div class="modal-bg" id="settings-modal" style="z-index:9999">
     <div class="modal">
-      <div class="modal-title">Cloud Sync Settings</div>
-      <div class="modal-sub">Configure your JSONBin.io credentials</div>
-
-      <span class="field-label">JSONBin Bin ID</span>
-      <input type="text" id="setting-bin-id" class="settings-input" placeholder="e.g. 6642a1f7acd3cb34a838...">
-
-      <span class="field-label">JSONBin API Key</span>
-      <input type="text" id="setting-api-key" class="settings-input" placeholder="e.g. $2a$10$...">
-
+      <div class="modal-title">Cloud Sync Info</div>
+      <div class="modal-sub">Neon PostgreSQL via Netlify Functions</div>
+      <div style="font-size:.8rem;color:var(--dim);line-height:1.6;margin-bottom:1.25rem">
+        All patrol data is stored in a <strong>Neon DB</strong> PostgreSQL database.
+        The database connection string is securely stored as a Netlify environment variable <code>DATABASE_URL</code>.
+        No client-side credentials are needed.
+      </div>
       <div class="modal-btns" style="margin-top: 20px;">
-        <button class="modal-cancel"
-          onclick="document.getElementById('settings-modal').style.display='none'">Cancel</button>
-        <button class="modal-confirm" onclick="saveSettings()">Save Configuration</button>
+        <button class="modal-confirm" onclick="document.getElementById('settings-modal').classList.remove('open')">Close</button>
       </div>
     </div>
   </div>
@@ -1092,14 +1088,11 @@
 
   <script>
     // ─────────────────────────────────────────────
-    //  CLOUD STORAGE CONFIG (JSONBin.io)
-    //  1. Create a free account at https://jsonbin.io
-    //  2. Create a Bin with content: {}
-    //  3. Paste your Bin ID and Master API Key below (Or configure via the UI)
+    //  CLOUD STORAGE CONFIG (Netlify Functions → Neon DB)
+    //  Credentials are stored server-side as Netlify env vars.
+    //  No client-side secrets needed.
     // ─────────────────────────────────────────────
-    let JSONBIN_BIN_ID = localStorage.getItem('sicim_jsonbin_id') || '69c12836c3097a1dd54fbae5';
-    let JSONBIN_API_KEY = localStorage.getItem('sicim_jsonbin_key') || '$2a$10$mr2nvnzVZBreQiZ3N0DGF.uePvPjNw2K1azq/PFay6W8lwQjt8Hmm';
-    let JSONBIN_URL = JSONBIN_BIN_ID ? `https://api.jsonbin.io/v3/b/${JSONBIN_BIN_ID}` : '';
+    const API_BASE = '/api';
     const POLL_INTERVAL_MS = 60000; // 60 seconds
 
 
@@ -1107,14 +1100,14 @@
     //  DATA
     // ─────────────────────────────────────────────
     const DATES = [
-      { label: 'Mon 24 Mar', key: '2026-03-24' },
-      { label: 'Tue 25 Mar', key: '2026-03-25' },
-      { label: 'Wed 26 Mar', key: '2026-03-26' },
-      { label: 'Thu 27 Mar', key: '2026-03-27' },
-      { label: 'Fri 28 Mar', key: '2026-03-28' },
-      { label: 'Sat 29 Mar', key: '2026-03-29' },
-      { label: 'Sun 30 Mar', key: '2026-03-30' },
-      { label: 'Mon 31 Mar', key: '2026-03-31' },
+      { label: 'Tue 24 Mar', key: '2026-03-24' },
+      { label: 'Wed 25 Mar', key: '2026-03-25' },
+      { label: 'Thu 26 Mar', key: '2026-03-26' },
+      { label: 'Fri 27 Mar', key: '2026-03-27' },
+      { label: 'Sat 28 Mar', key: '2026-03-28' },
+      { label: 'Sun 29 Mar', key: '2026-03-29' },
+      { label: 'Mon 30 Mar', key: '2026-03-30' },
+      { label: 'Tue 31 Mar', key: '2026-03-31' },
     ];
 
     const DAY_SLOTS = [
@@ -1204,17 +1197,16 @@
       if (status === 'sync') { b.textContent = '↻ SYNCING'; b.className = 'hdr-badge offline'; }
     }
 
-    // ── Cloud save (PUT to JSONBin) ──
-    async function saveCloudData() {
-      if (!JSONBIN_BIN_ID || JSONBIN_BIN_ID === 'YOUR_BIN_ID_HERE') return; // not configured
+    // ── Cloud save (POST to /api/save → Neon DB) ──
+    async function saveCloudData(entry) {
       try {
         setSyncBadge('sync');
-        const res = await fetch(JSONBIN_URL, {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json', 'X-Master-Key': JSONBIN_API_KEY },
-          body: JSON.stringify(state.data)
+        const res = await fetch(`${API_BASE}/save`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(entry)
         });
-        if (!res.ok) throw new Error('PUT failed ' + res.status);
+        if (!res.ok) throw new Error('Save failed ' + res.status);
         setSyncBadge('live');
       } catch (err) {
         console.warn('Cloud save failed:', err);
@@ -1222,26 +1214,18 @@
       }
     }
 
-    // ── Cloud load (GET from JSONBin) ──
+    // ── Cloud load (GET from /api/load → Neon DB) ──
     async function loadCloudData(quiet = false) {
-      if (!JSONBIN_BIN_ID || JSONBIN_BIN_ID === 'YOUR_BIN_ID_HERE') {
-        setSyncBadge('offline');
-        return false;
-      }
       try {
         if (!quiet) setSyncBadge('sync');
-        const res = await fetch(JSONBIN_URL + '/latest', {
-          headers: { 'X-Master-Key': JSONBIN_API_KEY }
-        });
-        if (!res.ok) throw new Error('GET failed ' + res.status);
-        const json = await res.json();
-        const cloudData = json.record || {};
-        // Merge: cloud wins for any slot already set; local wins for new entries not yet pushed
+        const res = await fetch(`${API_BASE}/load`);
+        if (!res.ok) throw new Error('Load failed ' + res.status);
+        const cloudData = await res.json();
+        // Merge: cloud wins per slot
         for (const [dk, slots] of Object.entries(cloudData)) {
           if (!state.data[dk]) state.data[dk] = {};
           Object.assign(state.data[dk], slots);
         }
-        // Also pick up any local-only keys not yet in cloud
         _store.setItem(STORAGE_KEY, JSON.stringify(state.data));
         setSyncBadge('live');
         return true;
@@ -1265,10 +1249,10 @@
       // Load from local cache first (instant), then sync from cloud
       try { const d = _store.getItem(STORAGE_KEY); if (d) state.data = JSON.parse(d); } catch (e) { }
     }
-    function saveData() {
-      // Save to local cache immediately, then push to cloud
+    function saveData(entry) {
+      // Save to local cache immediately, then push single record to cloud
       try { _store.setItem(STORAGE_KEY, JSON.stringify(state.data)); } catch (e) { }
-      saveCloudData(); // async, non-blocking
+      if (entry) saveCloudData(entry); // async, non-blocking — pass the changed record
     }
     function slotKey(shift, time) { return `${shift}_${time}`; }
     function getEntry(dateKey, sk) { return (state.data[dateKey] || {})[sk] || null; }
@@ -1412,9 +1396,11 @@
     function submitConfirmation() {
       const { dk, sk, status } = state.pending;
       const comment = document.getElementById('modal-comment').value.trim();
+      const ts = new Date().toISOString();
       if (!state.data[dk]) state.data[dk] = {};
-      state.data[dk][sk] = { status, user: state.user, ts: new Date().toISOString(), comment };
-      saveData();
+      state.data[dk][sk] = { status, user: state.user, ts, comment };
+      // Pass the individual record so saveData can push just this entry
+      saveData({ date_key: dk, slot_key: sk, status, user: state.user, ts, comment });
       closeModal();
       renderDateTabs();
       renderGrid();
